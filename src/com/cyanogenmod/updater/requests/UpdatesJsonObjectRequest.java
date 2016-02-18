@@ -21,9 +21,9 @@ public class UpdatesJsonObjectRequest extends JsonObjectRequest {
     private String mUserAgent;
     private HashMap<String, String> mHeaders = new HashMap<String, String>();
 
-    public UpdatesJsonObjectRequest(String url, String userAgent, JSONObject jsonRequest,
+    public UpdatesJsonObjectRequest(String url, String userAgent,
             Response.Listener<JSONObject> listener, Response.ErrorListener errorListener) {
-        super(url, jsonRequest, listener, errorListener);
+        super(url, null, listener, errorListener);
         mUserAgent = userAgent;
     }
 

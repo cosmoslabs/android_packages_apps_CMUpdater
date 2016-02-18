@@ -27,6 +27,7 @@ import com.cyanogenmod.updater.service.DownloadService;
 import com.cyanogenmod.updater.utils.Utils;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 
 public class DownloadReceiver extends BroadcastReceiver{
     private static final String TAG = "DownloadReceiver";
@@ -50,8 +51,15 @@ public class DownloadReceiver extends BroadcastReceiver{
             long id = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1);
             handleDownloadComplete(context, id);
         } else if (ACTION_INSTALL_UPDATE.equals(action)) {
-            StatusBarManager sb = (StatusBarManager) context.getSystemService(Context.STATUS_BAR_SERVICE);
-            sb.collapsePanels();
+            try {
+                Field f = Context.class.getField("STATUS_BAR_SERVICE");
+                String statusBarService = (String) f.get(null);
+                StatusBarManager sb  = (StatusBarManager) context.getSystemService(statusBarService);
+                sb.collapsePanels();
+            }
+            catch(Exception ex) {
+
+            }
             String fileName = intent.getStringExtra(EXTRA_FILENAME);
             try {
                 Utils.triggerUpdate(context, fileName);

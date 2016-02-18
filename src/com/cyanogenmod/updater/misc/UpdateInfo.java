@@ -39,12 +39,11 @@ public class UpdateInfo implements Parcelable, Serializable {
     private String mUiName;
     private String mFileName;
     private Type mType;
-    private int mApiLevel;
     private long mBuildDate;
     private String mDownloadUrl;
     private String mChangelogUrl;
     private String mMd5Sum;
-    private String mIncremental;
+    private String mId;
 
     private Boolean mIsNewerThanInstalled;
 
@@ -58,13 +57,6 @@ public class UpdateInfo implements Parcelable, Serializable {
 
     public File getChangeLogFile(Context context) {
         return new File(context.getCacheDir(), mFileName + CHANGELOG_EXTENSION);
-    }
-
-    /**
-     * Get API level
-     */
-    public int getApiLevel() {
-        return mApiLevel;
     }
 
     /**
@@ -127,7 +119,7 @@ public class UpdateInfo implements Parcelable, Serializable {
      * Get incremental version
      */
     public String getIncremental() {
-        return mIncremental;
+        return mId;
     }
 
     /**
@@ -147,21 +139,9 @@ public class UpdateInfo implements Parcelable, Serializable {
             return mIsNewerThanInstalled;
         }
 
-        int installedApiLevel = Utils.getInstalledApiLevel();
-        if (installedApiLevel != mApiLevel && mApiLevel > 0) {
-            mIsNewerThanInstalled = mApiLevel > installedApiLevel;
-        } else {
-            // API levels match, so compare build dates.
-            mIsNewerThanInstalled = mBuildDate > Utils.getInstalledBuildDate();
-        }
+        mIsNewerThanInstalled = (this.getIncremental() != Utils.getIncremental()) && mBuildDate > Utils.getInstalledBuildDate();
 
         return mIsNewerThanInstalled;
-    }
-
-    public static String extractUiName(String fileName) {
-        String deviceType = Utils.getDeviceType();
-        String uiName = fileName.replaceAll("\\.zip$", "");
-        return uiName.replaceAll("-" + deviceType + "-?", "");
     }
 
     @Override
@@ -185,7 +165,7 @@ public class UpdateInfo implements Parcelable, Serializable {
                 && mBuildDate == ui.mBuildDate
                 && TextUtils.equals(mDownloadUrl, ui.mDownloadUrl)
                 && TextUtils.equals(mMd5Sum, ui.mMd5Sum)
-                && TextUtils.equals(mIncremental, ui.mIncremental);
+                && TextUtils.equals(mId, ui.mId);
     }
 
     public static final Parcelable.Creator<UpdateInfo> CREATOR = new Parcelable.Creator<UpdateInfo>() {
@@ -208,22 +188,20 @@ public class UpdateInfo implements Parcelable, Serializable {
         out.writeString(mUiName);
         out.writeString(mFileName);
         out.writeString(mType.toString());
-        out.writeInt(mApiLevel);
         out.writeLong(mBuildDate);
         out.writeString(mDownloadUrl);
         out.writeString(mMd5Sum);
-        out.writeString(mIncremental);
+        out.writeString(mId);
     }
 
     private void readFromParcel(Parcel in) {
         mUiName = in.readString();
         mFileName = in.readString();
         mType = Enum.valueOf(Type.class, in.readString());
-        mApiLevel = in.readInt();
         mBuildDate = in.readLong();
         mDownloadUrl = in.readString();
         mMd5Sum = in.readString();
-        mIncremental = in.readString();
+        mId = in.readString();
     }
 
     public static class Builder {
@@ -235,7 +213,7 @@ public class UpdateInfo implements Parcelable, Serializable {
         private String mDownloadUrl;
         private String mChangelogUrl;
         private String mMd5Sum;
-        private String mIncremental;
+        private String mId;
 
 
         public Builder setName(String uiName) {
@@ -270,11 +248,6 @@ public class UpdateInfo implements Parcelable, Serializable {
             return this;
         }
 
-        public Builder setApiLevel(int apiLevel) {
-            mApiLevel = apiLevel;
-            return this;
-        }
-
         public Builder setBuildDate(long buildDate) {
             mBuildDate = buildDate;
             return this;
@@ -295,8 +268,8 @@ public class UpdateInfo implements Parcelable, Serializable {
             return this;
         }
 
-        public Builder setIncremental(String incremental) {
-            mIncremental = incremental;
+        public Builder setId(String id) {
+            mId = id;
             return this;
         }
 
@@ -305,23 +278,18 @@ public class UpdateInfo implements Parcelable, Serializable {
             info.mUiName = mUiName;
             info.mFileName = mFileName;
             info.mType = mType;
-            info.mApiLevel = mApiLevel;
             info.mBuildDate = mBuildDate;
             info.mDownloadUrl = mDownloadUrl;
             info.mChangelogUrl = mChangelogUrl;
             info.mMd5Sum = mMd5Sum;
-            info.mIncremental = mIncremental;
+            info.mId = mId;
             return info;
         }
 
 
         private void initializeName(String fileName) {
             mFileName = fileName;
-            if (!TextUtils.isEmpty(fileName)) {
-                mUiName = extractUiName(fileName);
-            } else {
-                mUiName = null;
-            }
+            mUiName = (!TextUtils.isEmpty(fileName)) ? fileName : null;
         }
     }
 }

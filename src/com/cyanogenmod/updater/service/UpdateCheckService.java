@@ -14,10 +14,8 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.os.Parcelable;
-import android.os.SystemProperties;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.util.Log;
@@ -201,64 +199,27 @@ public class UpdateCheckService extends IntentService
         sendBroadcast(finishedIntent);
     }
 
-    private URI getServerURI() {
-        String propertyUpdateUri = SystemProperties.get("cm.updater.uri");
-        if (!TextUtils.isEmpty(propertyUpdateUri)) {
-            return URI.create(propertyUpdateUri);
-        }
-
-        String configUpdateUri = getString(R.string.conf_update_server_url_def);
-        return URI.create(configUpdateUri);
-    }
-
     private void getAvailableUpdates() {
-        // Get the type of update we should check for
-        int updateType = Utils.getUpdateType();
-
         // Get the actual ROM Update Server URL
-        URI updateServerUri = getServerURI();
-        UpdatesJsonObjectRequest request;
-        try {
-            request = new UpdatesJsonObjectRequest(updateServerUri.toASCIIString(),
-                    Utils.getUserAgentString(this), buildUpdateRequest(updateType), this, this);
-            // Improve request error tolerance
-            request.setRetryPolicy(new DefaultRetryPolicy(UPDATE_REQUEST_TIMEOUT,
-                        UPDATE_REQUEST_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-            // Set the tag for the request, reuse logging tag
-            request.setTag(TAG);
-        } catch (JSONException e) {
-            Log.e(TAG, "Could not build request", e);
-            return;
-        }
+        URI requestUri = URI.create(Utils.getServerUrl(getBaseContext()) + buildUpdateRequestPath());
+        UpdatesJsonObjectRequest request = new UpdatesJsonObjectRequest(requestUri.toASCIIString(),
+                Utils.getUserAgentString(this), this, this);
+        // Improve request error tolerance
+        request.setRetryPolicy(new DefaultRetryPolicy(UPDATE_REQUEST_TIMEOUT,
+                    UPDATE_REQUEST_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+        // Set the tag for the request, reuse logging tag
+        request.setTag(TAG);
 
         ((UpdateApplication) getApplicationContext()).getQueue().add(request);
     }
 
-    private JSONObject buildUpdateRequest(int updateType) throws JSONException {
-        JSONArray channels = new JSONArray();
-
-        switch(updateType) {
-            case Constants.UPDATE_TYPE_SNAPSHOT:
-                channels.put("snapshot");
-                break;
-            case Constants.UPDATE_TYPE_NIGHTLY:
-            default:
-                channels.put("nightly");
-                break;
-        }
-        JSONObject params = new JSONObject();
-        params.put("device", TESTING_DOWNLOAD ? "cmtestdevice" : Utils.getDeviceType());
-        params.put("channels", channels);
-        params.put("source_incremental", Utils.getIncremental());
-
-        JSONObject request = new JSONObject();
-        request.put("method", "get_all_builds");
-        request.put("params", params);
-
-        return request;
+    private String buildUpdateRequestPath() {
+        return String.format("/build/%s/%s",
+                Utils.getUpdateType(getBaseContext()),
+                TESTING_DOWNLOAD ? "testdevice" : Utils.getDeviceType(getBaseContext()));
     }
 
-    private LinkedList<UpdateInfo> parseJSON(String jsonString, int updateType) {
+    private LinkedList<UpdateInfo> parseJSON(String jsonString) {
         LinkedList<UpdateInfo> updates = new LinkedList<UpdateInfo>();
         try {
             JSONObject result = new JSONObject(jsonString);
@@ -272,7 +233,7 @@ public class UpdateCheckService extends IntentService
                     continue;
                 }
                 JSONObject item = updateList.getJSONObject(i);
-                UpdateInfo info = parseUpdateJSONObject(item, updateType);
+                UpdateInfo info = parseUpdateJSONObject(item);
                 if (info != null) {
                     updates.add(info);
                 }
@@ -283,16 +244,15 @@ public class UpdateCheckService extends IntentService
         return updates;
     }
 
-    private UpdateInfo parseUpdateJSONObject(JSONObject obj, int updateType) throws JSONException {
+    private UpdateInfo parseUpdateJSONObject(JSONObject obj) throws JSONException {
         UpdateInfo ui = new UpdateInfo.Builder()
                 .setFileName(obj.getString("filename"))
                 .setDownloadUrl(obj.getString("url"))
                 .setChangelogUrl(obj.getString("changes"))
                 .setMD5Sum(obj.getString("md5sum"))
-                .setApiLevel(obj.getInt("api_level"))
-                .setBuildDate(obj.getLong("timestamp"))
+                .setBuildDate(obj.getLong("date"))
                 .setType(obj.getString("channel"))
-                .setIncremental(obj.getString("incremental"))
+                .setId(obj.getString("id"))
                 .build();
 
         if (!ui.isNewerThanInstalled()) {
@@ -313,10 +273,10 @@ public class UpdateCheckService extends IntentService
 
     @Override
     public void onResponse(JSONObject jsonObject) {
-        int updateType = Utils.getUpdateType();
+        String updateType = Utils.getUpdateType(getBaseContext());
 
         LinkedList<UpdateInfo> lastUpdates = State.loadState(this);
-        LinkedList<UpdateInfo> updates = parseJSON(jsonObject.toString(), updateType);
+        LinkedList<UpdateInfo> updates = parseJSON(jsonObject.toString());
 
         int newUpdates = 0, realUpdates = 0;
         for (UpdateInfo ui : updates) {

@@ -1,0 +1,10 @@
+# gradle stuff
+build
+.gradle
+
+# IntelliJ / Android Studio Stuff
+.idea
+*.iml
+
+# Local files
+local.properties

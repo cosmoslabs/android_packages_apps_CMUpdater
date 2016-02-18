@@ -25,7 +25,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Parcelable;
-import android.os.SystemProperties;
+import android.os.PowerManager;
 import android.preference.CheckBoxPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
@@ -41,8 +41,6 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import com.android.internal.util.cm.ScreenType;
 
 import com.cyanogenmod.updater.misc.Constants;
 import com.cyanogenmod.updater.misc.State;
@@ -142,9 +140,8 @@ public class UpdatesSettings extends PreferenceActivity implements
         }
 
         // Force a refresh if UPDATE_TYPE_PREF does not match release type
-        int updateType = Utils.getUpdateType();
-        int updateTypePref = mPrefs.getInt(Constants.UPDATE_TYPE_PREF,
-                Constants.UPDATE_TYPE_SNAPSHOT);
+        String updateType = Utils.getUpdateType(getBaseContext());
+        String updateTypePref = mPrefs.getString(Constants.UPDATE_TYPE_PREF, updateType);
         if (updateTypePref != updateType) {
             updateUpdatesType(updateType);
         }
@@ -205,16 +202,6 @@ public class UpdatesSettings extends PreferenceActivity implements
         }
 
         checkForDownloadCompleted(intent);
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-        // If running on a phone, remove padding around the listview
-        if (!ScreenType.isTablet(this)) {
-            getListView().setPadding(0, 0, 0, 0);
-        }
     }
 
     @Override
@@ -430,8 +417,8 @@ public class UpdatesSettings extends PreferenceActivity implements
                 .show();
     }
 
-    private void updateUpdatesType(int type) {
-        mPrefs.edit().putInt(Constants.UPDATE_TYPE_PREF, type).apply();
+    private void updateUpdatesType(String type) {
+        mPrefs.edit().putString(Constants.UPDATE_TYPE_PREF, type).apply();
         checkForUpdates();
     }
 
@@ -529,7 +516,7 @@ public class UpdatesSettings extends PreferenceActivity implements
         // Read existing Updates
         LinkedList<String> existingFiles = new LinkedList<String>();
 
-        mUpdateFolder = Utils.makeUpdateFolder();
+        mUpdateFolder = Utils.makeUpdateFolder(getBaseContext());
         File[] files = mUpdateFolder.listFiles(new UpdateFilter(".zip"));
 
         if (mUpdateFolder.exists() && mUpdateFolder.isDirectory() && files != null) {
@@ -552,7 +539,8 @@ public class UpdatesSettings extends PreferenceActivity implements
         }
         for (UpdateInfo update : availableUpdates) {
             // Only add updates to the list that are not already downloaded
-            if (existingFiles.contains(update.getFileName())) {
+            if (existingFiles.contains(update.getFileName())
+                || !update.isNewerThanInstalled() ) {
                 continue;
             }
             updates.add(update);
@@ -603,7 +591,7 @@ public class UpdatesSettings extends PreferenceActivity implements
         mUpdatesList.removeAll();
 
         // Convert the installed version name to the associated filename
-        String installedZip = "cm-" + Utils.getInstalledVersion() + ".zip";
+        String installedZip = Utils.getProductName(getBaseContext()) + "_" + Utils.getDeviceType(getBaseContext()) +"-" + Utils.getInstalledVersion() + ".zip";
 
         // Determine installed incremental
         String installedIncremental = Utils.getIncremental();
@@ -753,15 +741,11 @@ public class UpdatesSettings extends PreferenceActivity implements
         String date = DateFormat.getLongDateFormat(this).format(lastCheck);
         String time = DateFormat.getTimeFormat(this).format(lastCheck);
 
-        String cmReleaseType = Constants.CM_RELEASETYPE_NIGHTLY;
-        int updateType = Utils.getUpdateType();
-        if (updateType == Constants.UPDATE_TYPE_SNAPSHOT) {
-            cmReleaseType = Constants.CM_RELEASETYPE_SNAPSHOT;
-        }
+        String updateType = Utils.getUpdateType(getBaseContext());
 
-        String message = getString(R.string.sysinfo_device) + " " + Utils.getDeviceType() + "\n\n"
+        String message = getString(R.string.sysinfo_device) + " " + Utils.getDeviceType(getBaseContext()) + "\n\n"
                 + getString(R.string.sysinfo_running) + " " + Utils.getInstalledVersion() + "\n\n"
-                + getString(R.string.sysinfo_update_channel) + " " + cmReleaseType + "\n\n"
+                + getString(R.string.sysinfo_update_channel) + " " + updateType + "\n\n"
                 + getString(R.string.sysinfo_last_check) + " " + date + " " + time;
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this)

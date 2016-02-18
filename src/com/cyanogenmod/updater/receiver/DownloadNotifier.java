@@ -26,7 +26,7 @@ public class DownloadNotifier {
 
     public static void notifyDownloadComplete(Context context,
             Intent updateIntent, File updateFile) {
-        String updateUiName = UpdateInfo.extractUiName(updateFile.getName());
+        String updateUiName = updateFile.getName();
 
         Notification.BigTextStyle style = new Notification.BigTextStyle()
                 .setBigContentTitle(context.getString(R.string.not_download_success))
