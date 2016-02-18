@@ -14,10 +14,12 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.text.Html;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.webkit.WebView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.Request;
@@ -27,7 +29,6 @@ import com.android.volley.VolleyLog;
 
 import com.android.volley.toolbox.RequestFuture;
 import com.cyanogenmod.updater.R;
-import com.cyanogenmod.updater.NotifyingWebView;
 import com.cyanogenmod.updater.UpdateApplication;
 import com.cyanogenmod.updater.requests.ChangeLogRequest;
 import com.cyanogenmod.updater.utils.Utils;
@@ -47,7 +48,7 @@ public class FetchChangeLogTask extends AsyncTask<UpdateInfo, Void, Void>
 
     private Context mContext;
     private UpdateInfo mInfo;
-    private NotifyingWebView mChangeLogView;
+    private TextView mChangeLogView;
     private AlertDialog mAlertDialog;
 
     public FetchChangeLogTask(Context context) {
@@ -73,19 +74,8 @@ public class FetchChangeLogTask extends AsyncTask<UpdateInfo, Void, Void>
         final LayoutInflater inflater = LayoutInflater.from(mContext);
         final View view = inflater.inflate(R.layout.change_log_dialog, null);
         final View progressContainer = view.findViewById(R.id.progress);
-        mChangeLogView =
-                (NotifyingWebView) view.findViewById(R.id.changelog);
+        mChangeLogView = (TextView) view.findViewById(R.id.changelog);
 
-        mChangeLogView.setOnInitialContentReadyListener(
-                new NotifyingWebView.OnInitialContentReadyListener() {
-                    @Override
-                    public void onInitialContentReady(WebView webView) {
-                        progressContainer.setVisibility(View.GONE);
-                        mChangeLogView.setVisibility(View.VISIBLE);
-                    }
-                });
-
-        mChangeLogView.getSettings().setTextZoom(80);
         mChangeLogView.setBackgroundColor(
                 mContext.getResources().getColor(android.R.color.darker_gray));
 
@@ -108,8 +98,12 @@ public class FetchChangeLogTask extends AsyncTask<UpdateInfo, Void, Void>
             // Change log is empty
             Toast.makeText(mContext, R.string.no_changelog_alert, Toast.LENGTH_SHORT).show();
         } else {
-            // Load the url
-            mChangeLogView.loadUrl(Uri.fromFile(changeLog).toString());
+            try {
+                mChangeLogView.setText(Html.fromHtml(Utils.getStringFromFile(changeLog)));
+            }
+            catch(Exception e) {
+                Toast.makeText(mContext, R.string.no_changelog_alert, Toast.LENGTH_SHORT).show();
+            }
         }
     }
 
@@ -218,7 +212,6 @@ public class FetchChangeLogTask extends AsyncTask<UpdateInfo, Void, Void>
         // Cancel all pending requests
         ((UpdateApplication) mContext.getApplicationContext()).getQueue().cancelAll(TAG);
         // Clean up
-        mChangeLogView.destroy();
         mChangeLogView = null;
         mAlertDialog = null;
     }
