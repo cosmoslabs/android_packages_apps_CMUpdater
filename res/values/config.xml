@@ -8,7 +8,7 @@
 -->
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <!-- CMUpdate Config Strings -->
-    <string name="conf_release_type_property" translatable="false">ro.cm.releasetype</string>
+    <string name="conf_build_type_property" translatable="false">ro.cm.releasetype</string>
     <string name="conf_device_property" translatable="false">ro.cm.device</string>
     <string name="conf_updates_folder" translatable="false">Updates</string>
     <string name="conf_product_name_property" translatable="false">ro.product.name</string>

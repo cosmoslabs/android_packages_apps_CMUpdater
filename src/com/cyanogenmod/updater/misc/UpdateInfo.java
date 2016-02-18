@@ -28,17 +28,9 @@ public class UpdateInfo implements Parcelable, Serializable {
 
     public static final String CHANGELOG_EXTENSION = ".changelog.html";
 
-    public enum Type {
-        UNKNOWN,
-        STABLE,
-        RC,
-        SNAPSHOT,
-        NIGHTLY,
-        INCREMENTAL
-    };
     private String mUiName;
     private String mFileName;
-    private Type mType;
+    private String mType;
     private long mBuildDate;
     private String mDownloadUrl;
     private String mChangelogUrl;
@@ -83,7 +75,7 @@ public class UpdateInfo implements Parcelable, Serializable {
     /**
      * Get build type
      */
-    public Type getType() {
+    public String getType() {
         return mType;
     }
 
@@ -187,7 +179,7 @@ public class UpdateInfo implements Parcelable, Serializable {
     public void writeToParcel(Parcel out, int flags) {
         out.writeString(mUiName);
         out.writeString(mFileName);
-        out.writeString(mType.toString());
+        out.writeString(mType);
         out.writeLong(mBuildDate);
         out.writeString(mDownloadUrl);
         out.writeString(mMd5Sum);
@@ -197,7 +189,7 @@ public class UpdateInfo implements Parcelable, Serializable {
     private void readFromParcel(Parcel in) {
         mUiName = in.readString();
         mFileName = in.readString();
-        mType = Enum.valueOf(Type.class, in.readString());
+        mType = in.readString();
         mBuildDate = in.readLong();
         mDownloadUrl = in.readString();
         mMd5Sum = in.readString();
@@ -207,7 +199,7 @@ public class UpdateInfo implements Parcelable, Serializable {
     public static class Builder {
         private String mUiName;
         private String mFileName;
-        private Type mType = Type.UNKNOWN;
+        private String mType;
         private int mApiLevel;
         private long mBuildDate;
         private String mDownloadUrl;
@@ -226,24 +218,7 @@ public class UpdateInfo implements Parcelable, Serializable {
             return this;
         }
 
-        public Builder setType(String typeString) {
-            Type type;
-            if (TextUtils.equals(typeString, "stable")) {
-                type = UpdateInfo.Type.STABLE;
-            } else if (TextUtils.equals(typeString, "RC")) {
-                type = UpdateInfo.Type.RC;
-            } else if (TextUtils.equals(typeString, "snapshot")) {
-                type = UpdateInfo.Type.SNAPSHOT;
-            } else if (TextUtils.equals(typeString, "nightly")) {
-                type = UpdateInfo.Type.NIGHTLY;
-            } else {
-                type = UpdateInfo.Type.UNKNOWN;
-            }
-            mType = type;
-            return this;
-        }
-
-        public Builder setType(Type type) {
+        public Builder setType(String type) {
             mType = type;
             return this;
         }

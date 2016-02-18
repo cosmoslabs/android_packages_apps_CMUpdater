@@ -117,9 +117,8 @@ public class DownloadService extends IntentService
                     .setFileName(obj.getString("filename"))
                     .setDownloadUrl(obj.getString("download_url"))
                     .setMD5Sum(obj.getString("md5sum"))
-                    .setBuildDate(obj.getLong("date_created_unix"))
-                    .setType(UpdateInfo.Type.INCREMENTAL)
-                    .setId(obj.getString("incremental"))
+                    .setType(obj.getString("channel"))
+                    .setId(obj.getString("toId"))
                     .build();
         } catch (JSONException e) {
             Log.e(TAG, "JSONException", e);
