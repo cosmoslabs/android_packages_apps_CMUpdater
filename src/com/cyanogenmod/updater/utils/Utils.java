@@ -32,11 +32,7 @@ import com.cyanogenmod.updater.R;
 import com.cyanogenmod.updater.misc.Constants;
 import com.cyanogenmod.updater.service.UpdateCheckService;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
+import java.io.*;
 import java.lang.reflect.Method;
 
 public class Utils {
@@ -228,5 +224,24 @@ public class Utils {
 
     public static String getServerUrl(Context ctx) {
         return ctx.getString(R.string.conf_update_server_url_def);
+    }
+
+    public static String convertStreamToString(InputStream is) throws Exception {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+        StringBuilder sb = new StringBuilder();
+        String line = null;
+        while ((line = reader.readLine()) != null) {
+            sb.append(line).append("\n");
+        }
+        reader.close();
+        return sb.toString();
+    }
+
+    public static String getStringFromFile (File file) throws Exception {
+        FileInputStream fin = new FileInputStream(file);
+        String ret = convertStreamToString(fin);
+        //Make sure you close all streams.
+        fin.close();
+        return ret;
     }
 }
