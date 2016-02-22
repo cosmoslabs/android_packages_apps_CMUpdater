@@ -34,7 +34,6 @@ android {
     buildToolsVersion '23.0.2'
 
     defaultConfig {
-        applicationId "io.cosmoslabs.updater"
         minSdkVersion 21
         versionCode 4
         versionName "2.3"

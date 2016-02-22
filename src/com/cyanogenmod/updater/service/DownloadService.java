@@ -113,13 +113,20 @@ public class DownloadService extends IntentService
                 return null;
             }
 
+            if (!obj.has("result")) {
+                return null;
+            }
+
+            JSONObject deltaUpdateResult = obj.getJSONObject("result");
             return new UpdateInfo.Builder()
-                    .setFileName(obj.getString("filename"))
-                    .setDownloadUrl(obj.getString("download_url"))
-                    .setMD5Sum(obj.getString("md5sum"))
-                    .setType(obj.getString("channel"))
-                    .setId(obj.getString("toId"))
+                    .setFileName(deltaUpdateResult.getString("filename"))
+                    .setDownloadUrl(deltaUpdateResult.getString("url"))
+                    .setMD5Sum(deltaUpdateResult.getString("md5sum"))
+                    .setType(deltaUpdateResult.getString("channel"))
+                    .setFromId(deltaUpdateResult.getString("fromId"))
+                    .setId(deltaUpdateResult.getString("toId"))
                     .build();
+
         } catch (JSONException e) {
             Log.e(TAG, "JSONException", e);
             return null;

@@ -273,8 +273,6 @@ public class UpdateCheckService extends IntentService
 
     @Override
     public void onResponse(JSONObject jsonObject) {
-        String updateType = Utils.getUpdateType(getBaseContext());
-
         LinkedList<UpdateInfo> lastUpdates = State.loadState(this);
         LinkedList<UpdateInfo> updates = parseJSON(jsonObject.toString());
 

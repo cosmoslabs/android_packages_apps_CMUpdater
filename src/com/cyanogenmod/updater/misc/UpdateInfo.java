@@ -18,13 +18,9 @@ import com.cyanogenmod.updater.utils.Utils;
 
 import java.io.File;
 import java.io.Serializable;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class UpdateInfo implements Parcelable, Serializable {
     private static final long serialVersionUID = 5499890003569313403L;
-    private static final Pattern sIncrementalPattern =
-            Pattern.compile("^incremental-(.*)-(.*).zip$");
 
     public static final String CHANGELOG_EXTENSION = ".changelog.html";
 
@@ -36,8 +32,10 @@ public class UpdateInfo implements Parcelable, Serializable {
     private String mChangelogUrl;
     private String mMd5Sum;
     private String mId;
+    private String mFromId;
 
     private Boolean mIsNewerThanInstalled;
+
 
     private UpdateInfo() {
         // Use the builder
@@ -115,15 +113,15 @@ public class UpdateInfo implements Parcelable, Serializable {
     }
 
     /**
+     * Get id of the previous build in an incremental update
+     */
+    public String getFromId() { return mFromId; }
+
+    /**
      * Whether or not this is an incremental update
      */
     public boolean isIncremental() {
-        Matcher matcher = sIncrementalPattern.matcher(getFileName());
-        if (matcher.find() && matcher.groupCount() == 2) {
-            return true;
-        } else {
-            return false;
-        }
+        return (mFromId != null && !mFromId.isEmpty() && mId != null && !mId.isEmpty());
     }
 
     public boolean isNewerThanInstalled() {
@@ -206,6 +204,7 @@ public class UpdateInfo implements Parcelable, Serializable {
         private String mChangelogUrl;
         private String mMd5Sum;
         private String mId;
+        private String mFromId;
 
 
         public Builder setName(String uiName) {
@@ -248,6 +247,11 @@ public class UpdateInfo implements Parcelable, Serializable {
             return this;
         }
 
+        public Builder setFromId(String fromId) {
+            this.mFromId = fromId;
+            return this;
+        }
+
         public UpdateInfo build() {
             UpdateInfo info = new UpdateInfo();
             info.mUiName = mUiName;
@@ -258,6 +262,7 @@ public class UpdateInfo implements Parcelable, Serializable {
             info.mChangelogUrl = mChangelogUrl;
             info.mMd5Sum = mMd5Sum;
             info.mId = mId;
+            info.mFromId = mFromId;
             return info;
         }
 
