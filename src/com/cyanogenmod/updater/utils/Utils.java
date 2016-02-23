@@ -56,8 +56,8 @@ public class Utils {
         return getProp(ctx.getString(R.string.conf_device_property));
     }
 
-    public static String getInstalledVersion() {
-        return getProp("ro.cm.version");
+    public static String getInstalledVersion(Context ctx) {
+        return getProp(ctx.getString(R.string.conf_version_property));
     }
 
     public static long getInstalledBuildDate() {
@@ -69,8 +69,8 @@ public class Utils {
         }
     }
 
-    public static String getIncremental() {
-        return getProp("ro.build.version.incremental");
+    public static String getIncremental(Context ctx) {
+        return getProp(ctx.getString(R.string.conf_version_incremental_property));
     }
 
     public static String getProp(String prop) {
@@ -243,5 +243,10 @@ public class Utils {
         //Make sure you close all streams.
         fin.close();
         return ret;
+    }
+
+    public static boolean hasLeanback(Context context) {
+        PackageManager packageManager = context.getPackageManager();
+        return packageManager.hasSystemFeature(PackageManager.FEATURE_LEANBACK);
     }
 }

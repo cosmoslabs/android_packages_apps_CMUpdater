@@ -562,7 +562,7 @@ public class UpdatesSettings extends PreferenceActivity implements
         for (UpdateInfo update : availableUpdates) {
             // Only add updates to the list that are not already downloaded
             if (existingFiles.contains(update.getFileName())
-                || !update.isNewerThanInstalled() ) {
+                || !update.isNewerThanInstalled(getBaseContext()) ) {
                 continue;
             }
             updates.add(update);
@@ -613,10 +613,10 @@ public class UpdatesSettings extends PreferenceActivity implements
         mUpdatesList.removeAll();
 
         // Convert the installed version name to the associated filename
-        String installedZip = Utils.getProductName(getBaseContext()) + "_" + Utils.getDeviceType(getBaseContext()) +"-" + Utils.getInstalledVersion() + ".zip";
+        String installedZip = Utils.getProductName(getBaseContext()) + "_" + Utils.getDeviceType(getBaseContext()) +"-" + Utils.getInstalledVersion(getBaseContext()) + ".zip";
 
         // Determine installed incremental
-        String installedIncremental = Utils.getIncremental();
+        String installedIncremental = Utils.getIncremental(getBaseContext());
 
         // Convert LinkedList to HashMap, keyed on filename.
         HashMap<String, UpdateInfo> updatesMap = new HashMap<String, UpdateInfo>();
@@ -770,7 +770,7 @@ public class UpdatesSettings extends PreferenceActivity implements
         String updateType = Utils.getUpdateType(getBaseContext());
 
         String message = getString(R.string.sysinfo_device) + " " + Utils.getDeviceType(getBaseContext()) + "\n\n"
-                + getString(R.string.sysinfo_running) + " " + Utils.getInstalledVersion() + "\n\n"
+                + getString(R.string.sysinfo_running) + " " + Utils.getInstalledVersion(getBaseContext()) + "\n\n"
                 + getString(R.string.sysinfo_update_channel) + " " + updateType + "\n\n"
                 + getString(R.string.sysinfo_last_check) + " " + date + " " + time;
 

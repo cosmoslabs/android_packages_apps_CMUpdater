@@ -124,12 +124,12 @@ public class UpdateInfo implements Parcelable, Serializable {
         return (mFromId != null && !mFromId.isEmpty() && mId != null && !mId.isEmpty());
     }
 
-    public boolean isNewerThanInstalled() {
+    public boolean isNewerThanInstalled(Context ctx) {
         if (mIsNewerThanInstalled != null) {
             return mIsNewerThanInstalled;
         }
 
-        mIsNewerThanInstalled = (this.getIncremental() != Utils.getIncremental()) && mBuildDate > Utils.getInstalledBuildDate();
+        mIsNewerThanInstalled = (this.getIncremental() != Utils.getIncremental(ctx)) && mBuildDate > Utils.getInstalledBuildDate();
 
         return mIsNewerThanInstalled;
     }
@@ -198,7 +198,6 @@ public class UpdateInfo implements Parcelable, Serializable {
         private String mUiName;
         private String mFileName;
         private String mType;
-        private int mApiLevel;
         private long mBuildDate;
         private String mDownloadUrl;
         private String mChangelogUrl;

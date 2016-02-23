@@ -146,7 +146,7 @@ public class UpdateCheckService extends IntentService
 
             LinkedList<UpdateInfo> realUpdates = new LinkedList<UpdateInfo>();
             for (UpdateInfo ui : availableUpdates) {
-                if (ui.isNewerThanInstalled()) {
+                if (ui.isNewerThanInstalled(getBaseContext())) {
                     realUpdates.add(ui);
                 }
             }
@@ -256,7 +256,7 @@ public class UpdateCheckService extends IntentService
                 .setId(obj.getString("id"))
                 .build();
 
-        if (!ui.isNewerThanInstalled()) {
+        if (!ui.isNewerThanInstalled(getBaseContext())) {
             Log.d(TAG, "Build " + ui.getFileName() + " is older than the installed build");
             return null;
         }
@@ -282,7 +282,7 @@ public class UpdateCheckService extends IntentService
             if (!lastUpdates.contains(ui)) {
                 newUpdates++;
             }
-            if (ui.isNewerThanInstalled()) {
+            if (ui.isNewerThanInstalled(getBaseContext())) {
                 realUpdates++;
             }
         }

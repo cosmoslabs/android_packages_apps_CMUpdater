@@ -76,7 +76,7 @@ public class DownloadService extends IntentService
     }
 
     private void getIncremental() throws IOException {
-        String sourceIncremental = Utils.getIncremental();
+        String sourceIncremental = Utils.getIncremental(getBaseContext());
         Log.d(TAG, "Looking for incremental ota for source=" + sourceIncremental + ", target="
                 + mInfo.getIncremental());
 
@@ -156,7 +156,7 @@ public class DownloadService extends IntentService
         Log.v(TAG, "Downloading incremental zip: " + incrementalUpdateInfo.getDownloadUrl());
         // Build the name of the file to download, adding .partial at the end.  It will get
         // stripped off when the download completes
-        String sourceIncremental = Utils.getIncremental();
+        String sourceIncremental = Utils.getIncremental(getBaseContext());
         String targetIncremental = mInfo.getIncremental();
         String fileName = "incremental-" + sourceIncremental + "-" + targetIncremental + ".zip";
         String incrementalFilePath = "file://" + getUpdateDirectory(getBaseContext()).getAbsolutePath() + "/" + fileName + ".partial";
