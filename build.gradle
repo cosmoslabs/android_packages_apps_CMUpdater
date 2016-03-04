@@ -3,10 +3,10 @@ apply plugin: 'com.android.application'
 if( !project.ext.has("STORE_FILE") ) {
     Properties props = new Properties()
     props.load(new FileInputStream("$project.rootDir/signing.properties"))
- 
+
     props.each { prop ->
         project.ext.set(prop.key, prop.value)
-    }   
+    }
 }
 
 buildscript {
@@ -14,8 +14,8 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.0.0-beta5'
-        classpath 'com.google.gms:google-services:2.0.0-beta5'
+        classpath 'com.android.tools.build:gradle:2.0.0-beta6'
+        classpath 'com.google.gms:google-services:2.0.0-beta6'
     }
 }
 
@@ -51,7 +51,7 @@ android {
             keyPassword = project.ext.get("KEY_PASSWORD")
         }
     }
-    
+
     buildTypes {
         debug {
             minifyEnabled false
