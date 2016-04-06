@@ -14,8 +14,8 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.0.0-beta7'
-        classpath 'com.google.gms:google-services:2.0.0-beta7'
+        classpath 'com.android.tools.build:gradle:2.0.0-rc3'
+        classpath 'com.google.gms:google-services:2.0.0-rc3'
     }
 }
 
@@ -36,6 +36,7 @@ android {
     buildToolsVersion "23.0.3"
 
     defaultConfig {
+        applicationId "com.joinlunar.updater"
         minSdkVersion 22
         targetSdkVersion 22
         versionCode 4
