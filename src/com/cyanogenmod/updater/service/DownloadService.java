@@ -85,12 +85,7 @@ public class DownloadService extends IntentService
     }
 
     private String getServerUri() {
-        String propertyUri = Utils.getProp("cm.updater.uri");
-        if (!TextUtils.isEmpty(propertyUri)) {
-            return propertyUri;
-        }
-
-        return getString(R.string.conf_update_server_url_def);
+        return Utils.getProp(getString(R.string.conf_update_server_url_property));
     }
 
     private UpdatesJsonObjectRequest buildRequest(String sourceIncremental) {

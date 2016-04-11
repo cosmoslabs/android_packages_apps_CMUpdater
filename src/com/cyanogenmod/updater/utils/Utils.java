@@ -223,7 +223,7 @@ public class Utils {
     }
 
     public static String getServerUrl(Context ctx) {
-        return ctx.getString(R.string.conf_update_server_url_def);
+        return Utils.getProp(ctx.getString(R.string.conf_update_server_url_property));
     }
 
     public static String convertStreamToString(InputStream is) throws Exception {

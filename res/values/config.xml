@@ -15,5 +15,5 @@
     <string name="conf_version_incremental_property" translatable="false">ro.build.version.incremental</string>
 
     <string name="conf_updates_folder" translatable="false">Updates</string>
-    <string name="conf_update_server_url_def" translatable="false">https://download.cyanogenmod.org/api</string>
+    <string name="conf_update_server_url_property" translatable="false">ro.build.updater.url</string>
 </resources>
