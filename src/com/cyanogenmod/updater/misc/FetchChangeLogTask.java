@@ -19,6 +19,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.webkit.WebView;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -33,14 +34,10 @@ import com.cyanogenmod.updater.UpdateApplication;
 import com.cyanogenmod.updater.requests.ChangeLogRequest;
 import com.cyanogenmod.updater.utils.Utils;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public class FetchChangeLogTask extends AsyncTask<UpdateInfo, Void, Void>
         implements DialogInterface.OnDismissListener {
@@ -49,6 +46,7 @@ public class FetchChangeLogTask extends AsyncTask<UpdateInfo, Void, Void>
     private Context mContext;
     private UpdateInfo mInfo;
     private TextView mChangeLogView;
+    private View mProgressContainer;
     private AlertDialog mAlertDialog;
 
     public FetchChangeLogTask(Context context) {
@@ -61,6 +59,8 @@ public class FetchChangeLogTask extends AsyncTask<UpdateInfo, Void, Void>
 
         if (mInfo != null) {
             File changeLog = mInfo.getChangeLogFile(mContext);
+            if( changeLog.exists() )    changeLog.delete();
+
             if (!changeLog.exists()) {
                 fetchChangeLog(mInfo);
             }
@@ -73,11 +73,8 @@ public class FetchChangeLogTask extends AsyncTask<UpdateInfo, Void, Void>
         super.onPreExecute();
         final LayoutInflater inflater = LayoutInflater.from(mContext);
         final View view = inflater.inflate(R.layout.change_log_dialog, null);
-        final View progressContainer = view.findViewById(R.id.progress);
+        mProgressContainer = view.findViewById(R.id.progress);
         mChangeLogView = (TextView) view.findViewById(R.id.changelog);
-
-        mChangeLogView.setBackgroundColor(
-                mContext.getResources().getColor(android.R.color.darker_gray));
 
         // Prepare the dialog box
         mAlertDialog = new AlertDialog.Builder(mContext)
@@ -100,6 +97,8 @@ public class FetchChangeLogTask extends AsyncTask<UpdateInfo, Void, Void>
         } else {
             try {
                 mChangeLogView.setText(Html.fromHtml(Utils.getStringFromFile(changeLog)));
+                mProgressContainer.setVisibility(View.GONE);
+                ((ScrollView)mChangeLogView.getParent()).setVisibility(View.VISIBLE);
             }
             catch(Exception e) {
                 Toast.makeText(mContext, R.string.no_changelog_alert, Toast.LENGTH_SHORT).show();
@@ -128,82 +127,26 @@ public class FetchChangeLogTask extends AsyncTask<UpdateInfo, Void, Void>
         request.setTag(TAG);
 
         ((UpdateApplication) mContext.getApplicationContext()).getQueue().add(request);
+        Writer writer = null;
         try {
-            String response = future.get();
-            parseChangeLogFromResponse(info, response);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void parseChangeLogFromResponse(UpdateInfo info, String response) {
-        boolean finished = false;
-        BufferedReader reader = null;
-        BufferedWriter writer = null;
-
-        try {
+            String response = future.get(5000, TimeUnit.MILLISECONDS);
             writer = new BufferedWriter(
                     new FileWriter(info.getChangeLogFile(mContext)));
-            ByteArrayInputStream bais = new ByteArrayInputStream(response.getBytes());
-            reader = new BufferedReader(new InputStreamReader(bais), 2 * 1024);
-            boolean categoryMatch = false, hasData = false;
-            String line;
 
-            while ((line = reader.readLine()) != null) {
-                line = line.trim();
-                if (line.isEmpty()) {
-                    continue;
-                }
-
-                if (line.startsWith("=")) {
-                    categoryMatch = !categoryMatch;
-                } else if (categoryMatch) {
-                    if (hasData) {
-                        writer.append("<br />");
-                    }
-                    writer.append("<b><u>");
-                    writer.append(line);
-                    writer.append("</u></b>");
-                    writer.append("<br />");
-                    hasData = true;
-                } else if (line.startsWith("*")) {
-                    writer.append("<br /><b>");
-                    writer.append(line.replaceAll("\\*", ""));
-                    writer.append("</b>");
-                    writer.append("<br />");
-                    hasData = true;
-                } else {
-                    writer.append("&#8226;&nbsp;");
-                    writer.append(line);
-                    writer.append("<br />");
-                    hasData = true;
-                }
+            writer.write(response);
+            writer.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        finally {
+            if( !request.isCanceled() ) {
+                request.cancel();
             }
-            finished = true;
-        } catch (IOException e) {
-            Log.e(TAG, "Downloading change log for " + info + " failed", e);
-            // keeping finished at false will delete the partially written file below
-        } finally {
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (IOException e) {
-                    // ignore, not much we can do anyway
-                }
-            }
-            if (writer != null) {
+            if( writer != null ) {
                 try {
                     writer.close();
-                } catch (IOException e) {
-                    // ignore, not much we can do anyway
-                }
+                } catch(Exception e) {}
             }
-        }
-
-        if (!finished) {
-            info.getChangeLogFile(mContext).delete();
         }
     }
 

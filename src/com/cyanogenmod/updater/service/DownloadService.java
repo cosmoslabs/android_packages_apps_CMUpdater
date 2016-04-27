@@ -141,7 +141,7 @@ public class DownloadService extends IntentService
 
 
         // TODO: this could/should be made configurable
-        request.setAllowedOverMetered(false);
+        request.setAllowedOverMetered(true);
 
         final DownloadManager dm = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
         return dm.enqueue(request);
