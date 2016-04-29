@@ -535,20 +535,6 @@ public class UpdatesSettings extends PreferenceActivity implements
     }
 
     private void updateLayout() {
-        // Read existing Updates
-        LinkedList<String> existingFiles = new LinkedList<String>();
-
-        mUpdateFolder = Utils.makeUpdateFolder(getBaseContext());
-        File[] files = mUpdateFolder.listFiles(new UpdateFilter(".zip"));
-
-        if (mUpdateFolder.exists() && mUpdateFolder.isDirectory() && files != null) {
-            for (File file : files) {
-                if (file.isFile()) {
-                    existingFiles.add(file.getName());
-                }
-            }
-        }
-
         // Clear the notification if one exists
         Utils.cancelNotification(this);
 
@@ -556,15 +542,8 @@ public class UpdatesSettings extends PreferenceActivity implements
         LinkedList<UpdateInfo> availableUpdates = State.loadState(this);
         final LinkedList<UpdateInfo> updates = new LinkedList<UpdateInfo>();
 
-        for (String fileName : existingFiles) {
-            updates.add(new UpdateInfo.Builder().setFileName(fileName).build());
-        }
         for (UpdateInfo update : availableUpdates) {
             // Only add updates to the list that are not already downloaded
-            if (existingFiles.contains(update.getFileName())
-                || !update.isNewerThanInstalled(getBaseContext()) ) {
-                continue;
-            }
             updates.add(update);
         }
 

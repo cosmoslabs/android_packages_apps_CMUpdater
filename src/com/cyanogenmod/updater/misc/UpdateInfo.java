@@ -129,7 +129,7 @@ public class UpdateInfo implements Parcelable, Serializable {
             return mIsNewerThanInstalled;
         }
 
-        mIsNewerThanInstalled = (this.getIncremental() != Utils.getIncremental(ctx)) && mBuildDate > Utils.getInstalledBuildDate();
+        mIsNewerThanInstalled = (!this.getIncremental().equals(Utils.getIncremental(ctx))) && mBuildDate > Utils.getInstalledBuildDate();
 
         return mIsNewerThanInstalled;
     }

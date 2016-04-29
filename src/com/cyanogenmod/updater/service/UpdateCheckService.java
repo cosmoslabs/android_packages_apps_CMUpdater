@@ -235,9 +235,7 @@ public class UpdateCheckService extends IntentService
                 }
                 JSONObject item = updateList.getJSONObject(i);
                 UpdateInfo info = parseUpdateJSONObject(item);
-                if (info != null
-                        && info.getDate() > Utils.getInstalledBuildDate()
-                        && !info.getIncremental().equals(Utils.getIncremental(this))) {
+                if (info != null) {
                     updates.add(info);
                 }
             }
