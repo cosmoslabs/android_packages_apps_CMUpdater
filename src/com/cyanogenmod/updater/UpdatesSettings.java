@@ -25,8 +25,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Parcelable;
-import android.os.PowerManager;
-import android.preference.CheckBoxPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
@@ -137,6 +135,8 @@ public class UpdatesSettings extends PreferenceActivity implements
         }
         mUpdatesList = (PreferenceCategory) findPreference(UPDATES_CATEGORY);
         mUpdateCheck = (ListPreference) findPreference(Constants.UPDATE_CHECK_PREF);
+
+        mUpdateFolder = Utils.getAbosoluteUpdateFolder(this);
 
         // Load the stored preference data
         mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -257,7 +257,7 @@ public class UpdatesSettings extends PreferenceActivity implements
                 Toast.makeText(this, R.string.download_not_found, Toast.LENGTH_LONG).show();
             } else {
                 int status = c.getInt(c.getColumnIndex(DownloadManager.COLUMN_STATUS));
-                Uri uri = Uri.parse(c.getString(c.getColumnIndex(DownloadManager.COLUMN_URI)));
+                Uri uri = Uri.parse(c.getString(c.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI)));
                 if (status == DownloadManager.STATUS_PENDING
                         || status == DownloadManager.STATUS_RUNNING
                         || status == DownloadManager.STATUS_PAUSED) {
@@ -535,6 +535,20 @@ public class UpdatesSettings extends PreferenceActivity implements
     }
 
     private void updateLayout() {
+        // Read existing Updates
+        LinkedList<String> existingFiles = new LinkedList<String>();
+
+        mUpdateFolder = Utils.getAbosoluteUpdateFolder(getBaseContext());
+        File[] files = mUpdateFolder.listFiles(new UpdateFilter(".zip"));
+
+        if (mUpdateFolder.exists() && mUpdateFolder.isDirectory() && files != null) {
+            for (File file : files) {
+                if (file.isFile()) {
+                    existingFiles.add(file.getName());
+                }
+            }
+        }
+
         // Clear the notification if one exists
         Utils.cancelNotification(this);
 
@@ -542,8 +556,33 @@ public class UpdatesSettings extends PreferenceActivity implements
         LinkedList<UpdateInfo> availableUpdates = State.loadState(this);
         final LinkedList<UpdateInfo> updates = new LinkedList<UpdateInfo>();
 
+        if (mDownloadId >= 0) {
+            Cursor c = mDownloadManager.query(new DownloadManager.Query().setFilterById(mDownloadId));
+            try{
+                c.moveToFirst();
+                int statusIndex = c.getColumnIndex(DownloadManager.COLUMN_STATUS);
+                int status = c.getInt(statusIndex);
+                Uri uri = Uri.parse(c.getString(c.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI)));
+                if (status == DownloadManager.STATUS_PENDING
+                        || status == DownloadManager.STATUS_RUNNING
+                        || status == DownloadManager.STATUS_PAUSED) {
+                    String downloadUrl = uri.getLastPathSegment();
+                    String filename = downloadUrl.substring(0, downloadUrl.length() - ".partial".length());
+                    updates.add(new UpdateInfo.Builder(getBaseContext()).setFileName(filename).build());
+                }
+            }
+            catch(Exception e) {} // IGNORED
+            finally {
+                if (c != null) {
+                    c.close();
+                }
+            }
+        }
+
+        for (String fileName : existingFiles) {
+            updates.add(new UpdateInfo.Builder(getBaseContext()).setFileName(fileName).build());
+        }
         for (UpdateInfo update : availableUpdates) {
-            // Only add updates to the list that are not already downloaded
             updates.add(update);
         }
 
@@ -620,7 +659,10 @@ public class UpdatesSettings extends PreferenceActivity implements
             }
 
             // Determine the preference style and create the preference
-            boolean isDownloading = ui.getFileName().equals(mFileName);
+            boolean isDownloading = false;
+            if( mFileName != null ) {
+                isDownloading = mFileName.replace(".partial", "").equals(ui.getFileName());
+            }
             int style;
 
             if (isDownloading) {

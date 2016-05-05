@@ -246,7 +246,7 @@ public class UpdateCheckService extends IntentService
     }
 
     private UpdateInfo parseUpdateJSONObject(JSONObject obj) throws JSONException {
-        UpdateInfo ui = new UpdateInfo.Builder()
+        UpdateInfo ui = new UpdateInfo.Builder(getBaseContext())
                 .setFileName(obj.getString("filename"))
                 .setDownloadUrl(obj.getString("url"))
                 .setChangelogUrl(obj.getString("changes"))

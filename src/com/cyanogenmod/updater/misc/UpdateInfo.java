@@ -204,11 +204,10 @@ public class UpdateInfo implements Parcelable, Serializable {
         private String mMd5Sum;
         private String mId;
         private String mFromId;
+        private Context mContext;
 
-
-        public Builder setName(String uiName) {
-            mUiName = uiName;
-            return this;
+        public Builder(Context ctx) {
+            mContext = ctx;
         }
 
         public Builder setFileName(String fileName) {
@@ -267,8 +266,33 @@ public class UpdateInfo implements Parcelable, Serializable {
 
 
         private void initializeName(String fileName) {
+            final String incPrefix = "incremental-";
+            final String incSuffix = ".zip";
+
             mFileName = fileName;
-            mUiName = (!TextUtils.isEmpty(fileName)) ? fileName : null;
+
+            if( fileName != null
+                    && fileName.startsWith(incPrefix)
+                    && fileName.endsWith(incSuffix)) {
+                try {
+                    String[] incrementalSplit = fileName.substring(incPrefix.length(),
+                            fileName.length() - incSuffix.length()).split("-");
+
+                    if( incrementalSplit.length == 2 ) {
+                        mFromId = incrementalSplit[0];
+                        mId = incrementalSplit[1];
+                    }
+                }
+                catch(Exception e) {} // IGNORE
+            }
+            
+            if(!TextUtils.isEmpty(fileName)) {
+                mUiName = fileName
+                        .replace("incremental-", "")
+                        .replace(".zip", "")
+                        .replace(Utils.getProductName(mContext) + "_"
+                                + Utils.getDeviceType(mContext) + "-", "");
+            }
         }
     }
 }

@@ -17,7 +17,6 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Parcelable;
 import android.preference.PreferenceManager;
-import android.text.TextUtils;
 import android.util.Log;
 
 import com.android.volley.Response;
@@ -113,7 +112,7 @@ public class DownloadService extends IntentService
             }
 
             JSONObject deltaUpdateResult = obj.getJSONObject("result");
-            return new UpdateInfo.Builder()
+            return new UpdateInfo.Builder(getBaseContext())
                     .setFileName(deltaUpdateResult.getString("filename"))
                     .setDownloadUrl(deltaUpdateResult.getString("url"))
                     .setMD5Sum(deltaUpdateResult.getString("md5sum"))
@@ -197,7 +196,7 @@ public class DownloadService extends IntentService
 
     private File getUpdateDirectory(Context ctx) {
         // If directory doesn't exist, create it
-        File directory = Utils.makeUpdateFolder(ctx);
+        File directory = Utils.getAbosoluteUpdateFolder(ctx);
         if (!directory.exists()) {
             directory.mkdirs();
             Log.d(TAG, "UpdateFolder created");

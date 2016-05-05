@@ -40,7 +40,7 @@ public class Utils {
         // this class is not supposed to be instantiated
     }
 
-    public static File makeUpdateFolder(Context ctx) {
+    public static File getAbosoluteUpdateFolder(Context ctx) {
         return new File(Environment.getExternalStorageDirectory().getAbsolutePath(),
                 Utils.getUpdatesFolder(ctx));
     }
