@@ -31,9 +31,9 @@ android {
         applicationId "com.joinlunar.updater"
         minSdkVersion 22
         targetSdkVersion 22
-        versionCode 4
-        versionName "2.3"
-        setProperty("archivesBaseName", "Updater-$versionName")
+        versionCode = (rootProject.ext.has("versionCode") && rootProject.ext.get("versionCode") > 0) ? rootProject.ext.versionCode : 99999999
+        versionName = (rootProject.version.equals("unspecified")) ? "0.0.0" : rootProject.version
+        setProperty("archivesBaseName", "Updater-${versionCode}-${versionName}")
     }
 
     signingConfigs {
