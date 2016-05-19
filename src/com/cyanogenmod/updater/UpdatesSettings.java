@@ -661,7 +661,12 @@ public class UpdatesSettings extends PreferenceActivity implements
             // Determine the preference style and create the preference
             boolean isDownloading = false;
             if( mFileName != null ) {
-                isDownloading = mFileName.replace(".partial", "").equals(ui.getFileName());
+                if( haveIncremental ) {
+                    isDownloading = mFileName.replace(".partial", "").equals(incrementalFile);
+                }
+                else {
+                    isDownloading = mFileName.replace(".partial", "").equals(ui.getFileName());
+                }
             }
             int style;
 
