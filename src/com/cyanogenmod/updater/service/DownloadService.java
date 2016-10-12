@@ -83,12 +83,8 @@ public class DownloadService extends IntentService
         ((UpdateApplication) getApplicationContext()).getQueue().add(request);
     }
 
-    private String getServerUri() {
-        return Utils.getProp(getString(R.string.conf_update_server_url_property));
-    }
-
     private UpdatesJsonObjectRequest buildRequest(String sourceIncremental) {
-        URI requestUri = URI.create(getServerUri() + buildRequestPath(sourceIncremental));
+        URI requestUri = URI.create(Utils.getServerUrl(getBaseContext()) + buildRequestPath(sourceIncremental));
         UpdatesJsonObjectRequest request = new UpdatesJsonObjectRequest(requestUri.toASCIIString(),
                 Utils.getUserAgentString(this), this, this);
 
