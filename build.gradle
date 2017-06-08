@@ -1,6 +1,6 @@
 buildscript {
     dependencies {
-        classpath "com.android.tools.build:gradle:${setup.gradleBuildTools}"
+        classpath "com.android.tools.build:gradle:${versions.gradleBuildTools}"
     }
 }
 
