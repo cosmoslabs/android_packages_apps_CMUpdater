@@ -128,8 +128,14 @@ public class UpdateInfo implements Parcelable, Serializable {
         if (mIsNewerThanInstalled != null) {
             return mIsNewerThanInstalled;
         }
+        mIsNewerThanInstalled = false;
+        try {
+            Long thisBuildDate = Utils.getBuildDateFromId(this.getIncremental());
+            Long deviceBuildDate = Utils.getBuildDateFromId(Utils.getIncremental(ctx));
 
-        mIsNewerThanInstalled = (!this.getIncremental().equals(Utils.getIncremental(ctx))) && mBuildDate > Utils.getInstalledBuildDate();
+            mIsNewerThanInstalled = thisBuildDate > deviceBuildDate;
+        }
+        catch(Exception ex) {}
 
         return mIsNewerThanInstalled;
     }
@@ -152,7 +158,6 @@ public class UpdateInfo implements Parcelable, Serializable {
         UpdateInfo ui = (UpdateInfo) o;
         return TextUtils.equals(mFileName, ui.mFileName)
                 && mType.equals(ui.mType)
-                && mBuildDate == ui.mBuildDate
                 && TextUtils.equals(mDownloadUrl, ui.mDownloadUrl)
                 && TextUtils.equals(mMd5Sum, ui.mMd5Sum)
                 && TextUtils.equals(mId, ui.mId);
@@ -220,7 +225,7 @@ public class UpdateInfo implements Parcelable, Serializable {
             return this;
         }
 
-        public Builder setBuildDate(long buildDate) {
+        private Builder setBuildDate(long buildDate) {
             mBuildDate = buildDate;
             return this;
         }
@@ -242,7 +247,13 @@ public class UpdateInfo implements Parcelable, Serializable {
 
         public Builder setId(String id) {
             mId = id;
-            return this;
+            try {
+                String[] splitId = mId.split("\\.");
+                return this.setBuildDate(Long.decode(splitId[1] + splitId[2]));
+            }
+            catch(Exception ex) {
+                return this.setBuildDate(-1);
+            }
         }
 
         public Builder setFromId(String fromId) {

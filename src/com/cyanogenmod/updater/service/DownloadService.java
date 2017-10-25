@@ -190,15 +190,9 @@ public class DownloadService extends IntentService
         sendBroadcast(intent);
     }
 
-    private File getUpdateDirectory(Context ctx) {
+    private File getUpdateDirectory() {
         // If directory doesn't exist, create it
-        File directory = Utils.getAbosoluteUpdateFolder(ctx);
-        if (!directory.exists()) {
-            directory.mkdirs();
-            Log.d(TAG, "UpdateFolder created");
-        }
-
-        return directory;
+        return Utils.makeUpdateFolder(getApplicationContext());
     }
 
     @Override

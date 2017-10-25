@@ -16,4 +16,5 @@
 
     <string name="conf_updates_folder" translatable="false">Updates</string>
     <string name="conf_update_server_url_property" translatable="false">ro.build.updater.url</string>
+    <string name="conf_update_server_default_url" translatable="false">https://staging.lunarwireless.com/updates/</string>
 </resources>

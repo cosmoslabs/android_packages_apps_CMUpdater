@@ -40,9 +40,8 @@ public class Utils {
         // this class is not supposed to be instantiated
     }
 
-    public static File getAbosoluteUpdateFolder(Context ctx) {
-        return new File(Environment.getExternalStorageDirectory().getAbsolutePath(),
-                Utils.getUpdatesFolder(ctx));
+    public static File makeUpdateFolder(Context ctx) {
+        return ctx.getDir(Utils.getUpdatesFolder(ctx), Context.MODE_PRIVATE);
     }
 
     public static void cancelNotification(Context context) {
@@ -58,15 +57,6 @@ public class Utils {
 
     public static String getInstalledVersion(Context ctx) {
         return getProp(ctx.getString(R.string.conf_version_property));
-    }
-
-    public static long getInstalledBuildDate() {
-        try {
-            return Long.valueOf(getProp("ro.build.date.utc"));
-        }
-        catch(Exception e) {
-            return 0;
-        }
     }
 
     public static String getIncremental(Context ctx) {
@@ -161,42 +151,27 @@ public class Utils {
     }
 
     public static void triggerUpdate(Context context, String updateFileName) throws IOException {
-        /*
-         * Should perform the following steps.
-         * 1.- mkdir -p /cache/recovery
-         * 2.- echo 'boot-recovery' > /cache/recovery/command
-         * 3.- if(mBackup) echo '--nandroid'  >> /cache/recovery/command
-         * 4.- echo '--update_package=SDCARD:update.zip' >> /cache/recovery/command
-         * 5.- reboot recovery
-         */
-
-        // Set the 'boot recovery' command
-        Process p = Runtime.getRuntime().exec("sh");
-        OutputStream os = p.getOutputStream();
-        os.write("mkdir -p /cache/recovery/\n".getBytes());
-        os.write("echo 'boot-recovery' >/cache/recovery/command\n".getBytes());
-
-        // See if backups are enabled and add the nandroid flag
-        /* TODO: add this back once we have a way of doing backups that is not recovery specific
-           if (mPrefs.getBoolean(Constants.BACKUP_PREF, true)) {
-           os.write("echo '--nandroid'  >> /cache/recovery/command\n".getBytes());
-           }
-           */
-
         // Add the update folder/file name
-        String primaryStoragePath = Environment.getExternalStorageDirectory().getAbsolutePath();
-        // If data media rewrite the path to bypass the sd card fuse layer and trigger uncrypt
-        String directPath = Environment.getMediaStorageDirectory().getAbsolutePath();
-        String updatePath = Environment.isExternalStorageEmulated() ? directPath :
-                primaryStoragePath;
-        String cmd = "echo '--update_package=" + updatePath + "/" + Utils.getUpdatesFolder(context) + "/"
-                + updateFileName + "' >> /cache/recovery/command\n";
-        os.write(cmd.getBytes());
-        os.flush();
+        File primaryStorage = Environment.getExternalStorageDirectory();
 
-        // Trigger the reboot
-        PowerManager powerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
-        powerManager.reboot("recovery");
+        // If the path is emulated, translate it, if not return the original path
+        String updatePath = Environment.maybeTranslateEmulatedPathToInternal(
+                primaryStorage).getAbsolutePath();
+        // Create the path for the update package
+        String updatePackagePath = updatePath + "/" + getUpdatesFolder(context) + "/" + updateFileName;
+
+        /*
+         * maybeTranslateEmulatedPathToInternal requires that we have a full path to a file (not just
+         * a directory) and have read access to the file via both the emulated and actual paths.  As
+         * this is currently done, we lack the ability to read the file via the actual path, so the
+         * translation ends up failing.  Until this is all updated to download and store the file in
+         * a sane way, manually perform the translation that is needed in order for uncrypt to be
+         * able to find the file.
+         */
+        updatePackagePath = updatePackagePath.replace("storage/emulated", "data/media");
+
+        // Reboot into recovery and trigger the update
+        android.os.RecoverySystem.installPackage(context, new File(updatePackagePath));
     }
 
     public static String getUpdatesFolder(Context ctx) {
@@ -223,7 +198,13 @@ public class Utils {
     }
 
     public static String getServerUrl(Context ctx) {
-        return Utils.getProp(ctx.getString(R.string.conf_update_server_url_property));
+        return "https://staging.lunarwireless.com/updates/";
+//        String serverFromProps = Utils.getProp(ctx.getString(R.string.conf_update_server_url_property));
+//        if( serverFromProps == null ) {
+//            return ctx.getString(R.string.conf_update_server_default_url);
+//        }
+//
+//        return serverFromProps;
     }
 
     public static String convertStreamToString(InputStream is) throws Exception {
@@ -248,5 +229,16 @@ public class Utils {
     public static boolean hasLeanback(Context context) {
         PackageManager packageManager = context.getPackageManager();
         return packageManager.hasSystemFeature(PackageManager.FEATURE_LEANBACK);
+    }
+
+    public static Long getBuildDateFromId(String id) {
+        Long buildDate = -1L;
+        try {
+            String[] splitId = id.split("\\.");
+            buildDate = Long.decode(splitId[1] + splitId[2]);
+        }
+        catch(Exception ex) {}
+
+        return buildDate;
     }
 }

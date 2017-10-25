@@ -42,4 +42,6 @@ public class Environment {
     public static boolean isExternalStorageEmulated() {
         return false;
     }
+
+    public static File maybeTranslateEmulatedPathToInternal(File path) { return path; }
 }
