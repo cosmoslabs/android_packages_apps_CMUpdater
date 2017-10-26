@@ -143,20 +143,15 @@ public class DownloadService extends IntentService
 
     private void downloadIncremental(UpdateInfo incrementalUpdateInfo) {
         Log.v(TAG, "Downloading incremental zip: " + incrementalUpdateInfo.getDownloadUrl());
-        // Build the name of the file to download, adding .partial at the end.  It will get
-        // stripped off when the download completes
-        String sourceIncremental = Utils.getIncremental(getBaseContext());
-        String targetIncremental = mInfo.getIncremental();
-        String fileName = "incremental-" + sourceIncremental + "-" + targetIncremental + ".zip";
-        String incrementalFilePath = "file://" + getUpdateDirectory().getAbsolutePath() + "/" + fileName + ".partial";
 
-        long downloadId = enqueueDownload(incrementalUpdateInfo.getDownloadUrl(), incrementalFilePath);
+        long downloadId = enqueueDownload(incrementalUpdateInfo.getDownloadUrl());
 
         // Store in shared preferences
         mPrefs.edit()
                 .putLong(Constants.DOWNLOAD_ID, downloadId)
                 .putString(Constants.DOWNLOAD_MD5, incrementalUpdateInfo.getMD5Sum())
                 .putString(Constants.DOWNLOAD_INCREMENTAL_FOR, mInfo.getFileName())
+                .putString(Constants.DOWNLOAD_NAME, mInfo.getFileName())
                 .apply();
 
         Utils.cancelNotification(this);
@@ -175,6 +170,7 @@ public class DownloadService extends IntentService
         mPrefs.edit()
                 .putLong(Constants.DOWNLOAD_ID, downloadId)
                 .putString(Constants.DOWNLOAD_MD5, mInfo.getMD5Sum())
+                .putString(Constants.DOWNLOAD_NAME, mInfo.getFileName())
                 .apply();
 
         Utils.cancelNotification(this);

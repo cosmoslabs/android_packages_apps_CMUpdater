@@ -61,7 +61,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 
-public class UpdatesSettings extends PreferenceFragmentCompat implements
+public class UpdatesSettings extends PreferenceActivity implements
         Preference.OnPreferenceChangeListener, UpdatePreference.OnReadyListener,
         UpdatePreference.OnActionListener {
     private static String TAG = "UpdatesSettings";

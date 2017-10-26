@@ -59,7 +59,7 @@ public class DownloadCompleteIntentService extends IntentService {
         long id = intent.getLongExtra(Constants.DOWNLOAD_ID, -1);
         final String destName = intent.getStringExtra(Constants.DOWNLOAD_NAME);
 
-        Intent updateIntent = new Intent(this, UpdatesActivity.class);
+        Intent updateIntent = new Intent(this, UpdatesSettings.class);
         updateIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK |
                 Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
 

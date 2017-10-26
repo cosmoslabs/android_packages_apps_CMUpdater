@@ -85,12 +85,14 @@ public class DownloadReceiver extends BroadcastReceiver{
 
         String downloadedMD5 = prefs.getString(Constants.DOWNLOAD_MD5, "");
         String incrementalFor = prefs.getString(Constants.DOWNLOAD_INCREMENTAL_FOR, null);
+        String fileName = prefs.getString(Constants.DOWNLOAD_NAME, null);
 
         // Send off to DownloadCompleteIntentService
         Intent intent = new Intent(context, DownloadCompleteIntentService.class);
         intent.putExtra(Constants.DOWNLOAD_ID, id);
         intent.putExtra(Constants.DOWNLOAD_MD5, downloadedMD5);
         intent.putExtra(Constants.DOWNLOAD_INCREMENTAL_FOR, incrementalFor);
+        intent.putExtra(Constants.DOWNLOAD_NAME, fileName);
         context.startService(intent);
 
         // Clear the shared prefs
@@ -98,6 +100,7 @@ public class DownloadReceiver extends BroadcastReceiver{
                 .remove(Constants.DOWNLOAD_MD5)
                 .remove(Constants.DOWNLOAD_ID)
                 .remove(Constants.DOWNLOAD_INCREMENTAL_FOR)
+                .remove(Constants.DOWNLOAD_NAME)
                 .apply();
     }
 }

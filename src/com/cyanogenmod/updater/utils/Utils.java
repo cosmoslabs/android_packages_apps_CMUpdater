@@ -80,38 +80,6 @@ public class Utils {
         }
         return null;
     }
-
-    /**
-     * Method borrowed from OpenDelta. Using reflection voodoo instead calling
-     * the hidden class directly, to dev/test outside of AOSP tree.
-     * 
-     * @author Jorrit "Chainfire" Jongma
-     * @author The OmniROM Project
-     */
-    public static boolean setPermissions(String path, int mode, int uid, int gid) {
-        try {
-            Class<?> FileUtils = Utils.class.getClassLoader().loadClass("android.os.FileUtils");
-            Method setPermissions = FileUtils.getDeclaredMethod("setPermissions", new Class[] {
-                    String.class,
-                    int.class,
-                    int.class,
-                    int.class
-            });
-            return ((Integer) setPermissions.invoke(
-                    null,
-                    new Object[] {
-                            path,
-                            Integer.valueOf(mode),
-                            Integer.valueOf(uid),
-                            Integer.valueOf(gid)
-                    }) == 0);
-        } catch (Exception e) {
-            // A lot of voodoo could go wrong here, return failure instead of
-            // crash
-            e.printStackTrace();
-        }
-        return false;
-    }
     
     public static String getUserAgentString(Context context) {
         try {
