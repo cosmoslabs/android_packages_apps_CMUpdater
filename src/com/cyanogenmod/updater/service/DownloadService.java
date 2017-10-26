@@ -123,14 +123,13 @@ public class DownloadService extends IntentService
         }
     }
 
-    private long enqueueDownload(String downloadUrl, String localFilePath) {
+    private long enqueueDownload(String downloadUrl) {
         DownloadManager.Request request = new DownloadManager.Request(Uri.parse(downloadUrl));
         String userAgent = Utils.getUserAgentString(this);
         if (userAgent != null) {
             request.addRequestHeader("User-Agent", userAgent);
         }
         request.setTitle(getString(R.string.app_name));
-        request.setDestinationUri(Uri.parse(localFilePath));
         request.setAllowedOverRoaming(false);
         request.setVisibleInDownloadsUi(false);
 
@@ -149,7 +148,7 @@ public class DownloadService extends IntentService
         String sourceIncremental = Utils.getIncremental(getBaseContext());
         String targetIncremental = mInfo.getIncremental();
         String fileName = "incremental-" + sourceIncremental + "-" + targetIncremental + ".zip";
-        String incrementalFilePath = "file://" + getUpdateDirectory(getBaseContext()).getAbsolutePath() + "/" + fileName + ".partial";
+        String incrementalFilePath = "file://" + getUpdateDirectory().getAbsolutePath() + "/" + fileName + ".partial";
 
         long downloadId = enqueueDownload(incrementalUpdateInfo.getDownloadUrl(), incrementalFilePath);
 
@@ -170,12 +169,7 @@ public class DownloadService extends IntentService
     private void downloadFullZip() {
         Log.v(TAG, "Downloading full zip");
 
-        // Build the name of the file to download, adding .partial at the end.  It will get
-        // stripped off when the download completes
-        String fullFilePath = "file://" + getUpdateDirectory(getBaseContext()).getAbsolutePath() +
-                "/" + mInfo.getFileName() + ".partial";
-
-        long downloadId = enqueueDownload(mInfo.getDownloadUrl(), fullFilePath);
+        long downloadId = enqueueDownload(mInfo.getDownloadUrl());
 
         // Store in shared preferences
         mPrefs.edit()

@@ -16,16 +16,26 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 
+import android.os.ParcelFileDescriptor;
+import android.util.Log;
 import com.cyanogenmod.updater.R;
 import com.cyanogenmod.updater.UpdateApplication;
 import com.cyanogenmod.updater.UpdatesSettings;
 import com.cyanogenmod.updater.misc.Constants;
 import com.cyanogenmod.updater.receiver.DownloadNotifier;
 import com.cyanogenmod.updater.utils.MD5;
+import com.cyanogenmod.updater.utils.Utils;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.channels.FileChannel;
 
 public class DownloadCompleteIntentService extends IntentService {
+
+    private static final String TAG = "DownloadComplete";
+
     private DownloadManager mDm;
 
     @Override
@@ -40,55 +50,85 @@ public class DownloadCompleteIntentService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        if (!intent.hasExtra(Constants.DOWNLOAD_ID) ||
-                !intent.hasExtra(Constants.DOWNLOAD_MD5)) {
+
+        if (!intent.hasExtra(Constants.DOWNLOAD_ID) || !intent.hasExtra(Constants.DOWNLOAD_NAME)) {
+            Log.e(TAG, "Missing intent extra data");
             return;
         }
 
         long id = intent.getLongExtra(Constants.DOWNLOAD_ID, -1);
-        String downloadedMD5 = intent.getStringExtra(Constants.DOWNLOAD_MD5);
-        String incrementalFor = intent.getStringExtra(Constants.DOWNLOAD_INCREMENTAL_FOR);
+        final String destName = intent.getStringExtra(Constants.DOWNLOAD_NAME);
 
-        Intent updateIntent = new Intent(this, UpdatesSettings.class);
+        Intent updateIntent = new Intent(this, UpdatesActivity.class);
         updateIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK |
                 Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
 
         int status = fetchDownloadStatus(id);
         if (status == DownloadManager.STATUS_SUCCESSFUL) {
-            // Get the full path name of the downloaded file and the MD5
+            String destPath = Utils.makeUpdateFolder(getApplicationContext()).getPath() + "/"
+                    + destName;
+            File destFileTmp = new File(destPath + Constants.DOWNLOAD_TMP_EXT);
 
-            // Strip off the .partial at the end to get the completed file
-            String partialFileFullPath = fetchDownloadPartialPath(id);
+            try (
+                    FileOutputStream outStream = new FileOutputStream(destFileTmp);
 
-            if (partialFileFullPath == null) {
+                    ParcelFileDescriptor file = mDm.openDownloadedFile(id);
+                    FileInputStream inStream = new FileInputStream(file.getFileDescriptor());
+
+                    FileChannel inChannel = inStream.getChannel();
+                    FileChannel outChannel = outStream.getChannel();
+            ) {
+                inChannel.transferTo(0, file.getStatSize(), outChannel);
+            } catch (IOException e) {
+                Log.e(TAG, "Copy of download failed", e);
                 displayErrorResult(updateIntent, R.string.unable_to_download_file);
-            }
-
-            String completedFileFullPath = partialFileFullPath.replace(".partial", "");
-
-            File partialFile = new File(partialFileFullPath);
-            File updateFile = new File(completedFileFullPath);
-            partialFile.renameTo(updateFile);
-
-            // Start the MD5 check of the downloaded file
-            if (MD5.checkMD5(downloadedMD5, updateFile)) {
-                // We passed. Bring the main app to the foreground and trigger download completed
-                updateIntent.putExtra(UpdatesSettings.EXTRA_FINISHED_DOWNLOAD_ID, id);
-                updateIntent.putExtra(UpdatesSettings.EXTRA_FINISHED_DOWNLOAD_PATH,
-                        completedFileFullPath);
-                updateIntent.putExtra(UpdatesSettings.EXTRA_FINISHED_DOWNLOAD_INCREMENTAL_FOR,
-                        incrementalFor);
-                displaySuccessResult(updateIntent, updateFile);
-            } else {
-                // We failed. Clear the file and reset everything
-                mDm.remove(id);
-
-                if (updateFile.exists()) {
-                    updateFile.delete();
+                if (destFileTmp.exists()) {
+                    destFileTmp.delete();
                 }
-                displayErrorResult(updateIntent, R.string.md5_verification_failed);
+                return;
+            } finally {
+                mDm.remove(id);
             }
+
+            if (!destFileTmp.exists()) {
+                // The download was probably stopped. Exit silently
+                Log.d(TAG, "File not found, can't verify it");
+                return;
+            }
+
+            // Check the signature of the downloaded file
+            try {
+                android.os.RecoverySystem.verifyPackage(destFileTmp, null, null);
+            } catch (Exception e) {
+                Log.e(TAG, "Verification failed", e);
+                if (destFileTmp.exists()) {
+                    destFileTmp.delete();
+                    displayErrorResult(updateIntent, R.string.verification_failed);
+                } else {
+                    // The download was probably stopped. Exit silently
+                    Log.e(TAG, "Error while verifying the file", e);
+                }
+                return;
+            }
+
+            File destFile = new File(destPath);
+            if (destFile.exists()) {
+                destFile.delete();
+            }
+            if (!destFileTmp.exists()) {
+                // The download was probably stopped. Exit silently
+                Log.d(TAG, "File not found, can't rename it");
+                return;
+            }
+            destFileTmp.renameTo(destFile);
+
+            // We passed. Bring the main app to the foreground and trigger download completed
+            updateIntent.putExtra(UpdatesSettings.EXTRA_FINISHED_DOWNLOAD_ID, id);
+            updateIntent.putExtra(UpdatesSettings.EXTRA_FINISHED_DOWNLOAD_PATH,
+                    destPath);
+            displaySuccessResult(updateIntent, destFile);
         } else if (status == DownloadManager.STATUS_FAILED) {
+            Log.e(TAG, "Download failed");
             // The download failed, reset
             mDm.remove(id);
             displayErrorResult(updateIntent, R.string.unable_to_download_file);

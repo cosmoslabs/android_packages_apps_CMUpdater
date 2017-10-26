@@ -29,6 +29,7 @@ import android.os.Parcelable;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
+import android.support.v7.preference.PreferenceFragmentCompat;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceManager;
@@ -60,9 +61,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 
-public class UpdatesSettings extends PreferenceActivity implements
-        OnPreferenceChangeListener, UpdatePreference.OnReadyListener, UpdatePreference.OnActionListener,
-        ActivityCompat.OnRequestPermissionsResultCallback {
+public class UpdatesSettings extends PreferenceFragmentCompat implements
+        Preference.OnPreferenceChangeListener, UpdatePreference.OnReadyListener,
+        UpdatePreference.OnActionListener {
     private static String TAG = "UpdatesSettings";
 
     // intent extras

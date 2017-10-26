@@ -21,6 +21,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Environment;
 import android.os.PowerManager;
+import android.os.RecoverySystem;
 import android.os.UserHandle;
 import android.os.storage.StorageManager;
 import android.os.storage.StorageVolume;
@@ -151,24 +152,7 @@ public class Utils {
     }
 
     public static void triggerUpdate(Context context, String updateFileName) throws IOException {
-        // Add the update folder/file name
-        File primaryStorage = Environment.getExternalStorageDirectory();
-
-        // If the path is emulated, translate it, if not return the original path
-        String updatePath = Environment.maybeTranslateEmulatedPathToInternal(
-                primaryStorage).getAbsolutePath();
-        // Create the path for the update package
-        String updatePackagePath = updatePath + "/" + getUpdatesFolder(context) + "/" + updateFileName;
-
-        /*
-         * maybeTranslateEmulatedPathToInternal requires that we have a full path to a file (not just
-         * a directory) and have read access to the file via both the emulated and actual paths.  As
-         * this is currently done, we lack the ability to read the file via the actual path, so the
-         * translation ends up failing.  Until this is all updated to download and store the file in
-         * a sane way, manually perform the translation that is needed in order for uncrypt to be
-         * able to find the file.
-         */
-        updatePackagePath = updatePackagePath.replace("storage/emulated", "data/media");
+        String updatePackagePath = makeUpdateFolder(context).getPath() + "/" + updateFileName;
 
         // Reboot into recovery and trigger the update
         android.os.RecoverySystem.installPackage(context, new File(updatePackagePath));

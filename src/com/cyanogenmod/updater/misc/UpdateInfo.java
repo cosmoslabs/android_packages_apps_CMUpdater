@@ -133,7 +133,8 @@ public class UpdateInfo implements Parcelable, Serializable {
             Long thisBuildDate = Utils.getBuildDateFromId(this.getIncremental());
             Long deviceBuildDate = Utils.getBuildDateFromId(Utils.getIncremental(ctx));
 
-            mIsNewerThanInstalled = thisBuildDate > deviceBuildDate;
+            // TODO Fix this to be just '>'
+            mIsNewerThanInstalled = thisBuildDate >= deviceBuildDate;
         }
         catch(Exception ex) {}
 
