@@ -147,6 +147,16 @@ public class UpdateInfo implements Parcelable, Serializable {
     }
 
     @Override
+    public int hashCode() {
+        int hash = mId.hashCode();
+        if(mFromId != null && !mFromId.isEmpty()) {
+            hash ^= mFromId.hashCode();
+        }
+
+        return hash;
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (o == this) {
             return true;
@@ -157,11 +167,14 @@ public class UpdateInfo implements Parcelable, Serializable {
         }
 
         UpdateInfo ui = (UpdateInfo) o;
-        return TextUtils.equals(mFileName, ui.mFileName)
-                && mType.equals(ui.mType)
-                && TextUtils.equals(mDownloadUrl, ui.mDownloadUrl)
-                && TextUtils.equals(mMd5Sum, ui.mMd5Sum)
-                && TextUtils.equals(mId, ui.mId);
+        if(ui.isIncremental() != isIncremental()) {
+            return false;
+        }
+        else if(ui.isIncremental() && isIncremental()) {
+            return TextUtils.equals(mId, ui.mId) && TextUtils.equals(mFromId, ui.mFromId);
+        }
+
+        return TextUtils.equals(mId, ui.mId);
     }
 
     public static final Parcelable.Creator<UpdateInfo> CREATOR = new Parcelable.Creator<UpdateInfo>() {
@@ -218,6 +231,7 @@ public class UpdateInfo implements Parcelable, Serializable {
 
         public Builder setFileName(String fileName) {
             initializeName(fileName);
+
             return this;
         }
 
@@ -297,13 +311,19 @@ public class UpdateInfo implements Parcelable, Serializable {
                 }
                 catch(Exception e) {} // IGNORE
             }
-            
+            else {
+                String[] fileNameSplit = fileName.replace(".zip", "").split("-");
+                mId = fileNameSplit[4];
+            }
+
+            mBuildDate = Utils.getBuildDateFromId(mId);
+
             if(!TextUtils.isEmpty(fileName)) {
                 mUiName = fileName
+                        .replace("signed-", "")
                         .replace("incremental-", "")
                         .replace(".zip", "")
-                        .replace(Utils.getProductName(mContext) + "_"
-                                + Utils.getDeviceType(mContext) + "-", "");
+                        .replace(Utils.getProductName(mContext) + "-", "");
             }
         }
     }

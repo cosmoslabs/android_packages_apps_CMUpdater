@@ -122,6 +122,9 @@ public class Utils {
     public static void triggerUpdate(Context context, String updateFileName) throws IOException {
         String updatePackagePath = makeUpdateFolder(context).getPath() + "/" + updateFileName;
 
+        // Just in case /cache/recovery directory doesn't exist
+        (new File("/cache/recovery/")).mkdirs();
+
         // Reboot into recovery and trigger the update
         android.os.RecoverySystem.installPackage(context, new File(updatePackagePath));
     }

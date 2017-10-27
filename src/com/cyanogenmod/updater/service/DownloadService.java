@@ -180,11 +180,6 @@ public class DownloadService extends IntentService
         sendBroadcast(intent);
     }
 
-    private File getUpdateDirectory() {
-        // If directory doesn't exist, create it
-        return Utils.makeUpdateFolder(getApplicationContext());
-    }
-
     @Override
     public void onErrorResponse(VolleyError error) {
         VolleyLog.e("Error: ", error.getMessage());

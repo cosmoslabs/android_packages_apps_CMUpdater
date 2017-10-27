@@ -55,11 +55,16 @@ import com.cyanogenmod.updater.utils.Utils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 
 public class UpdatesSettings extends PreferenceActivity implements
         Preference.OnPreferenceChangeListener, UpdatePreference.OnReadyListener,
@@ -555,7 +560,7 @@ public class UpdatesSettings extends PreferenceActivity implements
 
         // Build list of updates
         LinkedList<UpdateInfo> availableUpdates = State.loadState(this);
-        final LinkedList<UpdateInfo> updates = new LinkedList<UpdateInfo>();
+        final HashSet<UpdateInfo> updates = new HashSet<>();
 
         if (mDownloadId >= 0) {
             Cursor c = mDownloadManager.query(new DownloadManager.Query().setFilterById(mDownloadId));
@@ -587,7 +592,8 @@ public class UpdatesSettings extends PreferenceActivity implements
             updates.add(update);
         }
 
-        Collections.sort(updates, new Comparator<UpdateInfo>() {
+        List<UpdateInfo> updateList = new ArrayList<>(updates);
+        Collections.sort(updateList, new Comparator<UpdateInfo>() {
             @Override
             public int compare(UpdateInfo lhs, UpdateInfo rhs) {
                 // sort in descending 'UI name' order (newest first)
@@ -596,7 +602,7 @@ public class UpdatesSettings extends PreferenceActivity implements
         });
 
         // Update the preference list
-        refreshPreferences(updates);
+        refreshPreferences(updateList);
 
         // Prune obsolete change log files
         new Thread() {
@@ -628,7 +634,7 @@ public class UpdatesSettings extends PreferenceActivity implements
         }.start();
     }
 
-    private void refreshPreferences(LinkedList<UpdateInfo> updates) {
+    private void refreshPreferences(List<UpdateInfo> updates) {
         if (mUpdatesList == null) {
             return;
         }
@@ -637,7 +643,9 @@ public class UpdatesSettings extends PreferenceActivity implements
         mUpdatesList.removeAll();
 
         // Convert the installed version name to the associated filename
-        String installedZip = Utils.getProductName(getBaseContext()) + "_" + Utils.getDeviceType(getBaseContext()) +"-" + Utils.getInstalledVersion(getBaseContext()) + ".zip";
+        String installedZip = "signed-" + Utils.getProductName(getBaseContext())
+                + "-" + Utils.getDeviceType(getBaseContext())
+                + "-" + Utils.getInstalledVersion(getBaseContext()) + ".zip";
 
         // Determine installed incremental
         String installedIncremental = Utils.getIncremental(getBaseContext());
@@ -967,7 +975,7 @@ public class UpdatesSettings extends PreferenceActivity implements
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         try {
-                            Utils.triggerUpdate(UpdatesSettings.this, updateInfo.getFileName());
+                            Utils.triggerUpdate(getApplicationContext(), updateInfo.getFileName());
                         } catch (IOException e) {
                             Log.e(TAG, "Unable to reboot into recovery mode", e);
                             Toast.makeText(UpdatesSettings.this, R.string.apply_unable_to_reboot_toast,
