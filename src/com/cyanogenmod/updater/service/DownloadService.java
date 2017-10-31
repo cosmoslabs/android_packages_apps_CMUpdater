@@ -151,7 +151,7 @@ public class DownloadService extends IntentService
                 .putLong(Constants.DOWNLOAD_ID, downloadId)
                 .putString(Constants.DOWNLOAD_MD5, incrementalUpdateInfo.getMD5Sum())
                 .putString(Constants.DOWNLOAD_INCREMENTAL_FOR, mInfo.getFileName())
-                .putString(Constants.DOWNLOAD_NAME, mInfo.getFileName())
+                .putString(Constants.DOWNLOAD_NAME, Constants.DOWNLOAD_INCREMENTAL_PREFIX + incrementalUpdateInfo.getFileName())
                 .apply();
 
         Utils.cancelNotification(this);

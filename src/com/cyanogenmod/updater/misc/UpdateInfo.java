@@ -133,8 +133,7 @@ public class UpdateInfo implements Parcelable, Serializable {
             Long thisBuildDate = Utils.getBuildDateFromId(this.getIncremental());
             Long deviceBuildDate = Utils.getBuildDateFromId(Utils.getIncremental(ctx));
 
-            // TODO Fix this to be just '>'
-            mIsNewerThanInstalled = thisBuildDate >= deviceBuildDate;
+            mIsNewerThanInstalled = thisBuildDate > deviceBuildDate;
         }
         catch(Exception ex) {}
 
@@ -211,6 +210,24 @@ public class UpdateInfo implements Parcelable, Serializable {
         mDownloadUrl = in.readString();
         mMd5Sum = in.readString();
         mId = in.readString();
+    }
+
+    public void assimilate(UpdateInfo ui) {
+        if(ui.getFileName() != null) {
+            this.mFileName = ui.getFileName();
+        }
+
+        if(ui.getDate() != -1) {
+            this.mBuildDate = ui.getDate();
+        }
+
+        if(ui.getDownloadUrl() != null) {
+            this.mDownloadUrl = ui.getDownloadUrl();
+        }
+
+        if (ui.getType() != null) {
+            this.mType = ui.getType();
+        }
     }
 
     public static class Builder {
@@ -292,27 +309,29 @@ public class UpdateInfo implements Parcelable, Serializable {
 
 
         private void initializeName(String fileName) {
-            final String incPrefix = "incremental-";
+            final String incPrefix = Constants.DOWNLOAD_INCREMENTAL_PREFIX;
             final String incSuffix = ".zip";
 
             mFileName = fileName;
+
+            fileName = fileName.replace(".zip", "");
 
             if( fileName != null
                     && fileName.startsWith(incPrefix)
                     && fileName.endsWith(incSuffix)) {
                 try {
                     String[] incrementalSplit = fileName.substring(incPrefix.length(),
-                            fileName.length() - incSuffix.length()).split("-");
+                            fileName.length()).split("-");
 
-                    if( incrementalSplit.length == 2 ) {
-                        mFromId = incrementalSplit[0];
-                        mId = incrementalSplit[1];
+                    if( incrementalSplit.length == 5 ) {
+                        mFromId = incrementalSplit[3];
+                        mId = incrementalSplit[4];
                     }
                 }
                 catch(Exception e) {} // IGNORE
             }
             else {
-                String[] fileNameSplit = fileName.replace(".zip", "").split("-");
+                String[] fileNameSplit = fileName.split("-");
                 mId = fileNameSplit[4];
             }
 
@@ -321,7 +340,7 @@ public class UpdateInfo implements Parcelable, Serializable {
             if(!TextUtils.isEmpty(fileName)) {
                 mUiName = fileName
                         .replace("signed-", "")
-                        .replace("incremental-", "")
+                        .replace(Constants.DOWNLOAD_INCREMENTAL_PREFIX, "")
                         .replace(".zip", "")
                         .replace(Utils.getProductName(mContext) + "-", "");
             }
