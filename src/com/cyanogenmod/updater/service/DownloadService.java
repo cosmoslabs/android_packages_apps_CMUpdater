@@ -15,6 +15,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.Environment;
 import android.os.Parcelable;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -123,8 +124,9 @@ public class DownloadService extends IntentService
         }
     }
 
-    private long enqueueDownload(String downloadUrl) {
-        DownloadManager.Request request = new DownloadManager.Request(Uri.parse(downloadUrl));
+    private long enqueueDownload(String download) {
+        Uri downloadUri = Uri.parse(download);
+        DownloadManager.Request request = new DownloadManager.Request(downloadUri);
         String userAgent = Utils.getUserAgentString(this);
         if (userAgent != null) {
             request.addRequestHeader("User-Agent", userAgent);
@@ -136,6 +138,11 @@ public class DownloadService extends IntentService
 
         // TODO: this could/should be made configurable
         request.setAllowedOverMetered(true);
+
+        request.setDestinationInExternalFilesDir(getBaseContext(),
+                Environment.getExternalStorageDirectory().getPath(),
+                downloadUri.getLastPathSegment().concat(Constants.DOWNLOAD_TMP_EXT)
+        );
 
         final DownloadManager dm = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
         return dm.enqueue(request);

@@ -553,8 +553,7 @@ public class UpdatesSettings extends PreferenceActivity implements
                         || status == DownloadManager.STATUS_RUNNING
                         || status == DownloadManager.STATUS_PAUSED) {
                     String downloadUrl = uri.getLastPathSegment();
-                    String filename = downloadUrl.substring(0, downloadUrl.length() - ".partial".length());
-                    updates.add(new UpdateInfo.Builder(getBaseContext()).setFileName(filename).build());
+                    mDownloadFileName = downloadUrl.substring(0, downloadUrl.length() - Constants.DOWNLOAD_TMP_EXT.length());
                 }
             }
             catch(Exception e) {} // IGNORED

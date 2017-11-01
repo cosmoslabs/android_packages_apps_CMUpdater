@@ -149,7 +149,7 @@ public class UpdateInfo implements Parcelable, Serializable {
 
     @Override
     public int hashCode() {
-        int hash = mId.hashCode();
+        int hash = mId.hashCode() ^ "UpdateInfo".hashCode();
         if(mFromId != null && !mFromId.isEmpty()) {
             hash ^= mFromId.hashCode();
         }
