@@ -117,6 +117,8 @@ public class UpdateInfo implements Parcelable, Serializable {
      */
     public String getFromId() { return mFromId; }
 
+    private String getUiName() { return mUiName; }
+
     /**
      * Whether or not this is an incremental update
      */
@@ -166,10 +168,7 @@ public class UpdateInfo implements Parcelable, Serializable {
         }
 
         UpdateInfo ui = (UpdateInfo) o;
-        if(ui.isIncremental() != isIncremental()) {
-            return false;
-        }
-        else if(ui.isIncremental() && isIncremental()) {
+        if(ui.isIncremental() && isIncremental()) {
             return TextUtils.equals(mId, ui.mId) && TextUtils.equals(mFromId, ui.mFromId);
         }
 
@@ -227,6 +226,10 @@ public class UpdateInfo implements Parcelable, Serializable {
 
         if (ui.getType() != null) {
             this.mType = ui.getType();
+        }
+
+        if(ui.getUiName() != null) {
+            this.mUiName = ui.getUiName();
         }
     }
 
@@ -310,20 +313,18 @@ public class UpdateInfo implements Parcelable, Serializable {
 
         private void initializeName(String fileName) {
             final String incPrefix = Constants.DOWNLOAD_INCREMENTAL_PREFIX;
-            final String incSuffix = ".zip";
 
             mFileName = fileName;
 
             fileName = fileName.replace(".zip", "");
 
-            if( fileName != null
-                    && fileName.startsWith(incPrefix)
-                    && fileName.endsWith(incSuffix)) {
+            if( fileName != null && fileName.startsWith(incPrefix)) {
                 try {
                     String[] incrementalSplit = fileName.substring(incPrefix.length(),
                             fileName.length()).split("-");
 
                     if( incrementalSplit.length == 5 ) {
+                        mType = incrementalSplit[2];
                         mFromId = incrementalSplit[3];
                         mId = incrementalSplit[4];
                     }
