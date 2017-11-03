@@ -15,6 +15,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.Environment;
 import android.os.Parcelable;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -34,7 +35,6 @@ import com.cyanogenmod.updater.utils.Utils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 
@@ -77,7 +77,7 @@ public class DownloadService extends IntentService
     private void getIncremental() throws IOException {
         String sourceIncremental = Utils.getIncremental(getBaseContext());
         Log.d(TAG, "Looking for incremental ota for source=" + sourceIncremental + ", target="
-                + mInfo.getIncremental());
+                + mInfo.getId());
 
         UpdatesJsonObjectRequest request = buildRequest(sourceIncremental);
         ((UpdateApplication) getApplicationContext()).getQueue().add(request);
@@ -94,7 +94,7 @@ public class DownloadService extends IntentService
     private String buildRequestPath(String sourceIncremental) {
         return String.format("/build/%s/%s/%s/%s", Utils.getUpdateType(getBaseContext()),
                 Utils.getDeviceType(getBaseContext()),
-                sourceIncremental, mInfo.getIncremental());
+                sourceIncremental, mInfo.getId());
     }
 
     private UpdateInfo jsonToInfo(JSONObject obj) {
@@ -123,14 +123,14 @@ public class DownloadService extends IntentService
         }
     }
 
-    private long enqueueDownload(String downloadUrl, String localFilePath) {
-        DownloadManager.Request request = new DownloadManager.Request(Uri.parse(downloadUrl));
+    private long enqueueDownload(String download) {
+        Uri downloadUri = Uri.parse(download);
+        DownloadManager.Request request = new DownloadManager.Request(downloadUri);
         String userAgent = Utils.getUserAgentString(this);
         if (userAgent != null) {
             request.addRequestHeader("User-Agent", userAgent);
         }
         request.setTitle(getString(R.string.app_name));
-        request.setDestinationUri(Uri.parse(localFilePath));
         request.setAllowedOverRoaming(false);
         request.setVisibleInDownloadsUi(false);
 
@@ -138,26 +138,25 @@ public class DownloadService extends IntentService
         // TODO: this could/should be made configurable
         request.setAllowedOverMetered(true);
 
+        request.setDestinationInExternalFilesDir(getBaseContext(),
+                Environment.getExternalStorageDirectory().getPath(),
+                downloadUri.getLastPathSegment().concat(Constants.DOWNLOAD_TMP_EXT)
+        );
+
         final DownloadManager dm = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
         return dm.enqueue(request);
     }
 
     private void downloadIncremental(UpdateInfo incrementalUpdateInfo) {
         Log.v(TAG, "Downloading incremental zip: " + incrementalUpdateInfo.getDownloadUrl());
-        // Build the name of the file to download, adding .partial at the end.  It will get
-        // stripped off when the download completes
-        String sourceIncremental = Utils.getIncremental(getBaseContext());
-        String targetIncremental = mInfo.getIncremental();
-        String fileName = "incremental-" + sourceIncremental + "-" + targetIncremental + ".zip";
-        String incrementalFilePath = "file://" + getUpdateDirectory(getBaseContext()).getAbsolutePath() + "/" + fileName + ".partial";
 
-        long downloadId = enqueueDownload(incrementalUpdateInfo.getDownloadUrl(), incrementalFilePath);
+        long downloadId = enqueueDownload(incrementalUpdateInfo.getDownloadUrl());
 
         // Store in shared preferences
         mPrefs.edit()
                 .putLong(Constants.DOWNLOAD_ID, downloadId)
                 .putString(Constants.DOWNLOAD_MD5, incrementalUpdateInfo.getMD5Sum())
-                .putString(Constants.DOWNLOAD_INCREMENTAL_FOR, mInfo.getFileName())
+                .putString(Constants.DOWNLOAD_NAME, incrementalUpdateInfo.getFileName())
                 .apply();
 
         Utils.cancelNotification(this);
@@ -170,17 +169,13 @@ public class DownloadService extends IntentService
     private void downloadFullZip() {
         Log.v(TAG, "Downloading full zip");
 
-        // Build the name of the file to download, adding .partial at the end.  It will get
-        // stripped off when the download completes
-        String fullFilePath = "file://" + getUpdateDirectory(getBaseContext()).getAbsolutePath() +
-                "/" + mInfo.getFileName() + ".partial";
-
-        long downloadId = enqueueDownload(mInfo.getDownloadUrl(), fullFilePath);
+        long downloadId = enqueueDownload(mInfo.getDownloadUrl());
 
         // Store in shared preferences
         mPrefs.edit()
                 .putLong(Constants.DOWNLOAD_ID, downloadId)
                 .putString(Constants.DOWNLOAD_MD5, mInfo.getMD5Sum())
+                .putString(Constants.DOWNLOAD_NAME, mInfo.getFileName())
                 .apply();
 
         Utils.cancelNotification(this);
@@ -188,11 +183,6 @@ public class DownloadService extends IntentService
         Intent intent = new Intent(DownloadReceiver.ACTION_DOWNLOAD_STARTED);
         intent.putExtra(DownloadManager.EXTRA_DOWNLOAD_ID, downloadId);
         sendBroadcast(intent);
-    }
-
-    private File getUpdateDirectory() {
-        // If directory doesn't exist, create it
-        return Utils.makeUpdateFolder(getApplicationContext());
     }
 
     @Override

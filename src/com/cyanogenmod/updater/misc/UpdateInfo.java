@@ -60,6 +60,9 @@ public class UpdateInfo implements Parcelable, Serializable {
      * Get file name
      */
     public String getFileName() {
+        if(isIncremental() && !mFileName.startsWith(Constants.DOWNLOAD_INCREMENTAL_PREFIX)) {
+            mFileName = Constants.DOWNLOAD_INCREMENTAL_PREFIX + mFileName;
+        }
         return mFileName;
     }
 
@@ -108,7 +111,7 @@ public class UpdateInfo implements Parcelable, Serializable {
     /**
      * Get incremental version
      */
-    public String getIncremental() {
+    public String getId() {
         return mId;
     }
 
@@ -116,6 +119,8 @@ public class UpdateInfo implements Parcelable, Serializable {
      * Get id of the previous build in an incremental update
      */
     public String getFromId() { return mFromId; }
+
+    private String getUiName() { return mUiName; }
 
     /**
      * Whether or not this is an incremental update
@@ -130,7 +135,7 @@ public class UpdateInfo implements Parcelable, Serializable {
         }
         mIsNewerThanInstalled = false;
         try {
-            Long thisBuildDate = Utils.getBuildDateFromId(this.getIncremental());
+            Long thisBuildDate = Utils.getBuildDateFromId(this.getId());
             Long deviceBuildDate = Utils.getBuildDateFromId(Utils.getIncremental(ctx));
 
             mIsNewerThanInstalled = thisBuildDate > deviceBuildDate;
@@ -146,6 +151,16 @@ public class UpdateInfo implements Parcelable, Serializable {
     }
 
     @Override
+    public int hashCode() {
+        int hash = mId.hashCode() ^ "UpdateInfo".hashCode();
+        if(mFromId != null && !mFromId.isEmpty()) {
+            hash ^= mFromId.hashCode();
+        }
+
+        return hash;
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (o == this) {
             return true;
@@ -156,11 +171,11 @@ public class UpdateInfo implements Parcelable, Serializable {
         }
 
         UpdateInfo ui = (UpdateInfo) o;
-        return TextUtils.equals(mFileName, ui.mFileName)
-                && mType.equals(ui.mType)
-                && TextUtils.equals(mDownloadUrl, ui.mDownloadUrl)
-                && TextUtils.equals(mMd5Sum, ui.mMd5Sum)
-                && TextUtils.equals(mId, ui.mId);
+        if(ui.isIncremental() && isIncremental()) {
+            return TextUtils.equals(mId, ui.mId) && TextUtils.equals(mFromId, ui.mFromId);
+        }
+
+        return TextUtils.equals(mId, ui.mId);
     }
 
     public static final Parcelable.Creator<UpdateInfo> CREATOR = new Parcelable.Creator<UpdateInfo>() {
@@ -199,6 +214,30 @@ public class UpdateInfo implements Parcelable, Serializable {
         mId = in.readString();
     }
 
+    public void assimilate(UpdateInfo ui) {
+        if((ui.isIncremental() && !isIncremental())) {
+            if (ui.getFileName() != null) {
+                this.mFileName = ui.getFileName();
+            }
+        }
+
+        if(ui.getDate() != -1) {
+            this.mBuildDate = ui.getDate();
+        }
+
+        if (ui.getType() != null) {
+            this.mType = ui.getType();
+        }
+
+        if(ui.getUiName() != null) {
+            this.mUiName = ui.getUiName();
+        }
+
+        if(ui.getDownloadUrl() != null) {
+            this.mDownloadUrl = ui.getDownloadUrl();
+        }
+    }
+
     public static class Builder {
         private String mUiName;
         private String mFileName;
@@ -217,6 +256,7 @@ public class UpdateInfo implements Parcelable, Serializable {
 
         public Builder setFileName(String fileName) {
             initializeName(fileName);
+
             return this;
         }
 
@@ -277,32 +317,38 @@ public class UpdateInfo implements Parcelable, Serializable {
 
 
         private void initializeName(String fileName) {
-            final String incPrefix = "incremental-";
-            final String incSuffix = ".zip";
+            final String incPrefix = Constants.DOWNLOAD_INCREMENTAL_PREFIX;
 
             mFileName = fileName;
 
-            if( fileName != null
-                    && fileName.startsWith(incPrefix)
-                    && fileName.endsWith(incSuffix)) {
+            fileName = fileName.replace(".zip", "");
+
+            if( fileName != null && fileName.startsWith(incPrefix)) {
                 try {
                     String[] incrementalSplit = fileName.substring(incPrefix.length(),
-                            fileName.length() - incSuffix.length()).split("-");
+                            fileName.length()).split("-");
 
-                    if( incrementalSplit.length == 2 ) {
-                        mFromId = incrementalSplit[0];
-                        mId = incrementalSplit[1];
+                    if( incrementalSplit.length == 5 ) {
+                        mType = incrementalSplit[2];
+                        mFromId = incrementalSplit[3];
+                        mId = incrementalSplit[4];
                     }
                 }
                 catch(Exception e) {} // IGNORE
             }
-            
+            else {
+                String[] fileNameSplit = fileName.split("-");
+                mId = fileNameSplit[4];
+            }
+
+            mBuildDate = Utils.getBuildDateFromId(mId);
+
             if(!TextUtils.isEmpty(fileName)) {
                 mUiName = fileName
-                        .replace("incremental-", "")
+                        .replace("signed-", "")
+                        .replace(Constants.DOWNLOAD_INCREMENTAL_PREFIX, "")
                         .replace(".zip", "")
-                        .replace(Utils.getProductName(mContext) + "_"
-                                + Utils.getDeviceType(mContext) + "-", "");
+                        .replace(Utils.getProductName(mContext) + "-", "");
             }
         }
     }

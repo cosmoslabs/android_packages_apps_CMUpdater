@@ -36,15 +36,6 @@ android {
         setProperty("archivesBaseName", "Updater")
     }
 
-    signingConfigs {
-        release {
-            storeFile = file(project.ext.get("STORE_FILE"))
-            storePassword = project.ext.get("STORE_PASSWORD")
-            keyAlias = project.ext.get("KEY_ALIAS")
-            keyPassword = project.ext.get("KEY_PASSWORD")
-        }
-    }
-
     buildTypes {
         debug {
             versionNameSuffix ".debug"
@@ -69,5 +60,7 @@ dependencies {
     compile "com.android.support:appcompat-v7:${versions.supportLib}"
     compile "com.android.support:leanback-v17:${versions.supportLib}"
     compile "com.android.support:support-v4:${versions.supportLib}"
+    compile "com.android.support:preference-v7:${versions.supportLib}"
+    compile "com.android.support:preference-v14:${versions.supportLib}"
     compile 'com.android.volley:volley:1.0.0'
 }

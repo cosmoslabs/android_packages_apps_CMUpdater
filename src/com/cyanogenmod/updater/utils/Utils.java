@@ -21,6 +21,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Environment;
 import android.os.PowerManager;
+import android.os.RecoverySystem;
 import android.os.UserHandle;
 import android.os.storage.StorageManager;
 import android.os.storage.StorageVolume;
@@ -79,38 +80,6 @@ public class Utils {
         }
         return null;
     }
-
-    /**
-     * Method borrowed from OpenDelta. Using reflection voodoo instead calling
-     * the hidden class directly, to dev/test outside of AOSP tree.
-     * 
-     * @author Jorrit "Chainfire" Jongma
-     * @author The OmniROM Project
-     */
-    public static boolean setPermissions(String path, int mode, int uid, int gid) {
-        try {
-            Class<?> FileUtils = Utils.class.getClassLoader().loadClass("android.os.FileUtils");
-            Method setPermissions = FileUtils.getDeclaredMethod("setPermissions", new Class[] {
-                    String.class,
-                    int.class,
-                    int.class,
-                    int.class
-            });
-            return ((Integer) setPermissions.invoke(
-                    null,
-                    new Object[] {
-                            path,
-                            Integer.valueOf(mode),
-                            Integer.valueOf(uid),
-                            Integer.valueOf(gid)
-                    }) == 0);
-        } catch (Exception e) {
-            // A lot of voodoo could go wrong here, return failure instead of
-            // crash
-            e.printStackTrace();
-        }
-        return false;
-    }
     
     public static String getUserAgentString(Context context) {
         try {
@@ -151,27 +120,13 @@ public class Utils {
     }
 
     public static void triggerUpdate(Context context, String updateFileName) throws IOException {
-        // Add the update folder/file name
-        File primaryStorage = Environment.getExternalStorageDirectory();
+        String updatePackagePath = makeUpdateFolder(context).getPath() + "/" + updateFileName;
 
-        // If the path is emulated, translate it, if not return the original path
-        String updatePath = Environment.maybeTranslateEmulatedPathToInternal(
-                primaryStorage).getAbsolutePath();
-        // Create the path for the update package
-        String updatePackagePath = updatePath + "/" + getUpdatesFolder(context) + "/" + updateFileName;
-
-        /*
-         * maybeTranslateEmulatedPathToInternal requires that we have a full path to a file (not just
-         * a directory) and have read access to the file via both the emulated and actual paths.  As
-         * this is currently done, we lack the ability to read the file via the actual path, so the
-         * translation ends up failing.  Until this is all updated to download and store the file in
-         * a sane way, manually perform the translation that is needed in order for uncrypt to be
-         * able to find the file.
-         */
-        updatePackagePath = updatePackagePath.replace("storage/emulated", "data/media");
+        // Just in case /cache/recovery directory doesn't exist
+        (new File("/cache/recovery/")).mkdirs();
 
         // Reboot into recovery and trigger the update
-        android.os.RecoverySystem.installPackage(context, new File(updatePackagePath));
+         android.os.RecoverySystem.installPackage(context, new File(updatePackagePath));
     }
 
     public static String getUpdatesFolder(Context ctx) {
