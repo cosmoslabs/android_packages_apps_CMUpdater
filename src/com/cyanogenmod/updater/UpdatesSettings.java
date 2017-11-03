@@ -441,24 +441,16 @@ public class UpdatesSettings extends PreferenceActivity implements
             return;
         }
 
-        String fileName = new File(fullPathName).getName();
+        UpdateInfo downloadedUpdateInfo = new UpdateInfo.Builder(getBaseContext())
+                .setFileName(new File(fullPathName).getName())
+                .build();
 
-        // If this is an incremental, find matching target and mark it as downloaded.
-        String incrementalFor = intent.getStringExtra(EXTRA_FINISHED_DOWNLOAD_INCREMENTAL_FOR);
-        if (incrementalFor != null) {
-            UpdatePreference pref = (UpdatePreference) mUpdatesList.findPreference(incrementalFor);
-            if (pref != null) {
-                pref.setStyle(UpdatePreference.STYLE_DOWNLOADED);
-                pref.getUpdateInfo().setFileName(fileName);
-                onStartUpdate(pref);
-            }
-        } else {
-            // Find the matching preference so we can retrieve the UpdateInfo
-            UpdatePreference pref = (UpdatePreference) mUpdatesList.findPreference(fileName);
-            if (pref != null) {
-                pref.setStyle(UpdatePreference.STYLE_DOWNLOADED);
-                onStartUpdate(pref);
-            }
+        // Find the matching preference so we can retrieve the UpdateInfo
+        UpdatePreference pref = (UpdatePreference) mUpdatesList.findPreference(downloadedUpdateInfo.getId());
+        if (pref != null) {
+            pref.getUpdateInfo().assimilate(downloadedUpdateInfo);
+            pref.setStyle(UpdatePreference.STYLE_DOWNLOADED);
+            onStartUpdate(pref);
         }
 
         resetDownloadState();
@@ -638,11 +630,6 @@ public class UpdatesSettings extends PreferenceActivity implements
         // Clear the list
         mUpdatesList.removeAll();
 
-        // Convert the installed version name to the associated filename
-        String installedZip = "signed-" + Utils.getProductName(getBaseContext())
-                + "-" + Utils.getDeviceType(getBaseContext())
-                + "-" + Utils.getInstalledVersion(getBaseContext()) + ".zip";
-
         // Determine installed incremental
         String installedIncremental = Utils.getIncremental(getBaseContext());
 
@@ -652,31 +639,37 @@ public class UpdatesSettings extends PreferenceActivity implements
             updatesMap.put(ui.getFileName(), ui);
         }
 
+        UpdateInfo downloadingUpdateInfo = null;
+        if(mDownloadFileName != null) {
+            downloadingUpdateInfo = new UpdateInfo.Builder(getBaseContext())
+                    .setFileName(mDownloadFileName).build();
+        }
+
         // Add the updates
         for (UpdateInfo ui : updates) {
-            boolean haveIncremental = ui.isIncremental();
-
             // Determine the preference style and create the preference
-            boolean isDownloading = ui.getFileName().equals(mDownloadFileName);
+            boolean isDownloading = ui.equals(downloadingUpdateInfo);
+            boolean isDownloaded = new File(
+                    Utils.makeUpdateFolder(getBaseContext()).getPath() + "/"
+                    + ui.getFileName()).exists();
+
             int style;
 
             if (isDownloading) {
                 // In progress download
                 style = UpdatePreference.STYLE_DOWNLOADING;
-            } else if (haveIncremental) {
-                style = UpdatePreference.STYLE_DOWNLOADED;
-            } else if (ui.getFileName().equals(installedZip)) {
+            } else if (ui.getId().equals(installedIncremental)) {
                 // This is the currently installed version
                 style = UpdatePreference.STYLE_INSTALLED;
-            } else if (ui.getDownloadUrl() != null) {
-                style = UpdatePreference.STYLE_NEW;
-            } else {
+            } else if (isDownloaded) {
                 style = UpdatePreference.STYLE_DOWNLOADED;
+            } else {
+                style = UpdatePreference.STYLE_NEW;
             }
 
             UpdatePreference up = new UpdatePreference(this, ui, style);
             up.setOnActionListener(this);
-            up.setKey(ui.getFileName());
+            up.setKey(ui.getId());
 
             // If we have an in progress download, link the preference
             if (isDownloading) {

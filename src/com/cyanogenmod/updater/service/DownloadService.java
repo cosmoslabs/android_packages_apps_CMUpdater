@@ -35,7 +35,6 @@ import com.cyanogenmod.updater.utils.Utils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 
@@ -78,7 +77,7 @@ public class DownloadService extends IntentService
     private void getIncremental() throws IOException {
         String sourceIncremental = Utils.getIncremental(getBaseContext());
         Log.d(TAG, "Looking for incremental ota for source=" + sourceIncremental + ", target="
-                + mInfo.getIncremental());
+                + mInfo.getId());
 
         UpdatesJsonObjectRequest request = buildRequest(sourceIncremental);
         ((UpdateApplication) getApplicationContext()).getQueue().add(request);
@@ -95,7 +94,7 @@ public class DownloadService extends IntentService
     private String buildRequestPath(String sourceIncremental) {
         return String.format("/build/%s/%s/%s/%s", Utils.getUpdateType(getBaseContext()),
                 Utils.getDeviceType(getBaseContext()),
-                sourceIncremental, mInfo.getIncremental());
+                sourceIncremental, mInfo.getId());
     }
 
     private UpdateInfo jsonToInfo(JSONObject obj) {
@@ -157,8 +156,7 @@ public class DownloadService extends IntentService
         mPrefs.edit()
                 .putLong(Constants.DOWNLOAD_ID, downloadId)
                 .putString(Constants.DOWNLOAD_MD5, incrementalUpdateInfo.getMD5Sum())
-                .putString(Constants.DOWNLOAD_INCREMENTAL_FOR, mInfo.getFileName())
-                .putString(Constants.DOWNLOAD_NAME, Constants.DOWNLOAD_INCREMENTAL_PREFIX + incrementalUpdateInfo.getFileName())
+                .putString(Constants.DOWNLOAD_NAME, incrementalUpdateInfo.getFileName())
                 .apply();
 
         Utils.cancelNotification(this);

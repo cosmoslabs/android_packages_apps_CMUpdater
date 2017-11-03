@@ -126,7 +126,7 @@ public class Utils {
         (new File("/cache/recovery/")).mkdirs();
 
         // Reboot into recovery and trigger the update
-        android.os.RecoverySystem.installPackage(context, new File(updatePackagePath));
+         android.os.RecoverySystem.installPackage(context, new File(updatePackagePath));
     }
 
     public static String getUpdatesFolder(Context ctx) {

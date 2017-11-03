@@ -60,6 +60,9 @@ public class UpdateInfo implements Parcelable, Serializable {
      * Get file name
      */
     public String getFileName() {
+        if(isIncremental() && !mFileName.startsWith(Constants.DOWNLOAD_INCREMENTAL_PREFIX)) {
+            mFileName = Constants.DOWNLOAD_INCREMENTAL_PREFIX + mFileName;
+        }
         return mFileName;
     }
 
@@ -108,7 +111,7 @@ public class UpdateInfo implements Parcelable, Serializable {
     /**
      * Get incremental version
      */
-    public String getIncremental() {
+    public String getId() {
         return mId;
     }
 
@@ -132,7 +135,7 @@ public class UpdateInfo implements Parcelable, Serializable {
         }
         mIsNewerThanInstalled = false;
         try {
-            Long thisBuildDate = Utils.getBuildDateFromId(this.getIncremental());
+            Long thisBuildDate = Utils.getBuildDateFromId(this.getId());
             Long deviceBuildDate = Utils.getBuildDateFromId(Utils.getIncremental(ctx));
 
             mIsNewerThanInstalled = thisBuildDate > deviceBuildDate;
@@ -212,16 +215,14 @@ public class UpdateInfo implements Parcelable, Serializable {
     }
 
     public void assimilate(UpdateInfo ui) {
-        if(ui.getFileName() != null) {
-            this.mFileName = ui.getFileName();
+        if((ui.isIncremental() && !isIncremental())) {
+            if (ui.getFileName() != null) {
+                this.mFileName = ui.getFileName();
+            }
         }
 
         if(ui.getDate() != -1) {
             this.mBuildDate = ui.getDate();
-        }
-
-        if(ui.getDownloadUrl() != null) {
-            this.mDownloadUrl = ui.getDownloadUrl();
         }
 
         if (ui.getType() != null) {
@@ -230,6 +231,10 @@ public class UpdateInfo implements Parcelable, Serializable {
 
         if(ui.getUiName() != null) {
             this.mUiName = ui.getUiName();
+        }
+
+        if(ui.getDownloadUrl() != null) {
+            this.mDownloadUrl = ui.getDownloadUrl();
         }
     }
 
