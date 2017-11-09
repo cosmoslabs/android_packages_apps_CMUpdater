@@ -114,7 +114,9 @@ public class DownloadService extends IntentService
                     .setMD5Sum(deltaUpdateResult.getString("md5sum"))
                     .setType(deltaUpdateResult.getString("channel"))
                     .setFromId(deltaUpdateResult.getString("fromId"))
+                    .setIncremental(deltaUpdateResult.getString("toIncremental"))
                     .setId(deltaUpdateResult.getString("toId"))
+                    .setIncremental(deltaUpdateResult.getString("toIncremental"))
                     .build();
 
         } catch (JSONException e) {

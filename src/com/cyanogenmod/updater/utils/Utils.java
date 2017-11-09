@@ -60,8 +60,8 @@ public class Utils {
         return getProp(ctx.getString(R.string.conf_version_property));
     }
 
-    public static String getIncremental(Context ctx) {
-        return getProp(ctx.getString(R.string.conf_version_incremental_property));
+    public static Long getIncremental(Context ctx) {
+        return Long.getLong(getProp(ctx.getString(R.string.conf_version_incremental_property)));
     }
 
     public static String getProp(String prop) {
@@ -184,16 +184,5 @@ public class Utils {
     public static boolean hasLeanback(Context context) {
         PackageManager packageManager = context.getPackageManager();
         return packageManager.hasSystemFeature(PackageManager.FEATURE_LEANBACK);
-    }
-
-    public static Long getBuildDateFromId(String id) {
-        Long buildDate = -1L;
-        try {
-            String[] splitId = id.split("\\.");
-            buildDate = Long.decode(splitId[1] + splitId[2]);
-        }
-        catch(Exception ex) {}
-
-        return buildDate;
     }
 }
