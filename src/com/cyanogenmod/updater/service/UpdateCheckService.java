@@ -154,13 +154,7 @@ public class UpdateCheckService extends IntentService
             Collections.sort(realUpdates, new Comparator<UpdateInfo>() {
                 @Override
                 public int compare(UpdateInfo lhs, UpdateInfo rhs) {
-                    /* sort by date descending */
-                    long lhsDate = lhs.getIncremental();
-                    long rhsDate = rhs.getIncremental();
-                    if (lhsDate == rhsDate) {
-                        return 0;
-                    }
-                    return lhsDate < rhsDate ? 1 : -1;
+                    return Integer.compare(lhs.getIncremental(), rhs.getIncremental());
                 }
             });
 
