@@ -60,8 +60,12 @@ public class Utils {
         return getProp(ctx.getString(R.string.conf_version_property));
     }
 
-    public static Long getIncremental(Context ctx) {
-        return Long.getLong(getProp(ctx.getString(R.string.conf_version_incremental_property)));
+    public static int getIncremental(Context ctx) {
+        String incrementalProp = getProp(ctx.getString(R.string.conf_version_incremental_property));
+        if(incrementalProp == null) {
+            return -1;
+        }
+        return Integer.parseInt(incrementalProp);
     }
 
     public static String getProp(String prop) {

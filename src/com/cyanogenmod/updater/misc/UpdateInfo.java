@@ -288,10 +288,12 @@ public class UpdateInfo implements Parcelable, Serializable {
 
         public Builder setId(String id) {
             mId = id;
+            return this;
         }
 
         public Builder setIncremental(String incremental) {
             mIncremental = Integer.parseInt(incremental);
+            return this;
         }
 
         public Builder setFromId(String fromId) {

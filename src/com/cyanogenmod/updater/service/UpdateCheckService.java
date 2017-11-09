@@ -155,8 +155,8 @@ public class UpdateCheckService extends IntentService
                 @Override
                 public int compare(UpdateInfo lhs, UpdateInfo rhs) {
                     /* sort by date descending */
-                    long lhsDate = lhs.getDate();
-                    long rhsDate = rhs.getDate();
+                    long lhsDate = lhs.getIncremental();
+                    long rhsDate = rhs.getIncremental();
                     if (lhsDate == rhsDate) {
                         return 0;
                     }

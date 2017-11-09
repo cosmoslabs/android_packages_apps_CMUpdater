@@ -631,7 +631,7 @@ public class UpdatesSettings extends PreferenceActivity implements
         mUpdatesList.removeAll();
 
         // Determine installed incremental
-        String installedIncremental = Utils.getIncremental(getBaseContext());
+        int installedIncremental = Utils.getIncremental(getBaseContext());
 
         // Convert LinkedList to HashMap, keyed on filename.
         HashMap<String, UpdateInfo> updatesMap = new HashMap<String, UpdateInfo>();
@@ -658,7 +658,7 @@ public class UpdatesSettings extends PreferenceActivity implements
             if (isDownloading) {
                 // In progress download
                 style = UpdatePreference.STYLE_DOWNLOADING;
-            } else if (ui.getId().equals(installedIncremental)) {
+            } else if (ui.getIncremental() == installedIncremental) {
                 // This is the currently installed version
                 style = UpdatePreference.STYLE_INSTALLED;
             } else if (isDownloaded) {

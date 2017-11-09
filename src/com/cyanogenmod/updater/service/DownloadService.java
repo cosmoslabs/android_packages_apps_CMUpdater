@@ -75,7 +75,7 @@ public class DownloadService extends IntentService
     }
 
     private void getIncremental() throws IOException {
-        String sourceIncremental = Utils.getIncremental(getBaseContext());
+        int sourceIncremental = Utils.getIncremental(getBaseContext());
         Log.d(TAG, "Looking for incremental ota for source=" + sourceIncremental + ", target="
                 + mInfo.getId());
 
@@ -83,7 +83,7 @@ public class DownloadService extends IntentService
         ((UpdateApplication) getApplicationContext()).getQueue().add(request);
     }
 
-    private UpdatesJsonObjectRequest buildRequest(String sourceIncremental) {
+    private UpdatesJsonObjectRequest buildRequest(int sourceIncremental) {
         URI requestUri = URI.create(Utils.getServerUrl(getBaseContext()) + buildRequestPath(sourceIncremental));
         UpdatesJsonObjectRequest request = new UpdatesJsonObjectRequest(requestUri.toASCIIString(),
                 Utils.getUserAgentString(this), this, this);
@@ -91,7 +91,7 @@ public class DownloadService extends IntentService
         return request;
     }
 
-    private String buildRequestPath(String sourceIncremental) {
+    private String buildRequestPath(int sourceIncremental) {
         return String.format("/build/%s/%s/%s/%s", Utils.getUpdateType(getBaseContext()),
                 Utils.getDeviceType(getBaseContext()),
                 sourceIncremental, mInfo.getId());
