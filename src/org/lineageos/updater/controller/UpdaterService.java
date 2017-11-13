@@ -25,8 +25,8 @@ import android.content.IntentFilter;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v7.app.NotificationCompat;
 import android.support.v7.preference.PreferenceManager;
 import android.text.format.Formatter;
 import android.util.Log;
@@ -184,7 +184,7 @@ public class UpdaterService extends Service {
                     } else if (Utils.isEncrypted(this, update.getFile())) {
                         // uncrypt rewrites the file so that it can be read without mounting
                         // the filesystem, so create a copy of it.
-                        File uncrytpFile = new File(
+                        final File uncrytpFile = new File(
                                 update.getFile().getAbsolutePath() + Constants.UNCRYPT_FILE_EXT);
                         FileUtils.prepareForUncrypt(this, update.getFile(), uncrytpFile,
                                 new Runnable() {
@@ -252,7 +252,7 @@ public class UpdaterService extends Service {
             case DOWNLOADING: {
                 String text = getString(R.string.downloading_notification);
                 mNotificationStyle.bigText(text);
-                mNotificationBuilder.addAction(com.android.internal.R.drawable.ic_media_pause,
+                mNotificationBuilder.addAction(android.R.drawable.ic_media_pause,
                         getString(R.string.pause_button),
                         getPausePendingIntent(update.getDownloadId()));
                 mNotificationBuilder.setTicker(text);
@@ -268,7 +268,7 @@ public class UpdaterService extends Service {
                 mNotificationBuilder.mActions.clear();
                 String text = getString(R.string.download_paused_notification);
                 mNotificationStyle.bigText(text);
-                mNotificationBuilder.addAction(com.android.internal.R.drawable.ic_media_play,
+                mNotificationBuilder.addAction(android.R.drawable.ic_media_play,
                         getString(R.string.resume_button),
                         getResumePendingIntent(update.getDownloadId()));
                 mNotificationBuilder.setTicker(text);
@@ -285,7 +285,7 @@ public class UpdaterService extends Service {
                 mNotificationBuilder.mActions.clear();
                 String text = getString(R.string.download_paused_error_notification);
                 mNotificationStyle.bigText(text);
-                mNotificationBuilder.addAction(com.android.internal.R.drawable.ic_media_play,
+                mNotificationBuilder.addAction(android.R.drawable.ic_media_play,
                         getString(R.string.resume_button),
                         getResumePendingIntent(update.getDownloadId()));
                 mNotificationBuilder.setTicker(text);
@@ -408,7 +408,7 @@ public class UpdaterService extends Service {
 
     private void setNotificationTitle(UpdateInfo update) {
         String buildDate = StringGenerator.getDateLocalizedUTC(this,
-                DateFormat.MEDIUM, update.getTimestamp());
+                DateFormat.MEDIUM, update.getIncremental());
         String buildInfo = getString(R.string.list_build_version_date,
                 BuildInfoUtils.getBuildVersion(), buildDate);
         mNotificationStyle.setBigContentTitle(buildInfo);

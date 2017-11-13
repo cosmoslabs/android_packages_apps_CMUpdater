@@ -53,6 +53,8 @@ import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.NumberFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 public class UpdatesListAdapter extends RecyclerView.Adapter<UpdatesListAdapter.ViewHolder> {
@@ -128,7 +130,7 @@ public class UpdatesListAdapter extends RecyclerView.Adapter<UpdatesListAdapter.
 
     private void handleActiveStatus(ViewHolder viewHolder, UpdateInfo update) {
         String buildDate = StringGenerator.getDateLocalizedUTC(mActivity,
-                DateFormat.MEDIUM, update.getTimestamp());
+                DateFormat.MEDIUM, update.getIncremental());
         String buildInfoText = mActivity.getString(R.string.list_build_version_date,
                 BuildInfoUtils.getBuildVersion(), buildDate);
         viewHolder.mBuildInfo.setText(buildInfoText);
@@ -181,10 +183,18 @@ public class UpdatesListAdapter extends RecyclerView.Adapter<UpdatesListAdapter.
     }
 
     private void handleNotActiveStatus(ViewHolder viewHolder, UpdateInfo update) {
-        String buildDate = StringGenerator.getDateLocalizedUTC(mActivity,
-                DateFormat.LONG, update.getTimestamp());
+        String buildDate = null;
+        try {
+            SimpleDateFormat readSdf = new SimpleDateFormat("yyyyMMDD");
+            SimpleDateFormat writeSdf = new SimpleDateFormat("MM-DD-yyyy");
+            buildDate = writeSdf.format(readSdf
+                    .parse(String.valueOf(update.getIncremental()))
+            );
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
         String buildVersion = mActivity.getString(R.string.list_build_version,
-                update.getVersion());
+                update.getDisplayVersion());
         viewHolder.mBuildDate.setText(buildDate);
         viewHolder.mBuildVersion.setText(buildVersion);
 
@@ -267,7 +277,7 @@ public class UpdatesListAdapter extends RecyclerView.Adapter<UpdatesListAdapter.
     }
 
     private void startDownloadWithWarning(final String downloadId) {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(mActivity);
+        final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(mActivity);
         boolean warn = preferences.getBoolean(Constants.PREF_MOBILE_DATA_WARNING, true);
         if (Utils.isOnWifiOrEthernet(mActivity) || !warn) {
             mUpdaterController.startDownload(downloadId);
@@ -275,7 +285,7 @@ public class UpdatesListAdapter extends RecyclerView.Adapter<UpdatesListAdapter.
         }
 
         View checkboxView = LayoutInflater.from(mActivity).inflate(R.layout.checkbox_view, null);
-        CheckBox checkbox = (CheckBox) checkboxView.findViewById(R.id.checkbox);
+        final CheckBox checkbox = (CheckBox) checkboxView.findViewById(R.id.checkbox);
         checkbox.setText(R.string.checkbox_mobile_data_warning);
 
         new AlertDialog.Builder(mActivity)
@@ -458,7 +468,7 @@ public class UpdatesListAdapter extends RecyclerView.Adapter<UpdatesListAdapter.
         }
 
         String buildDate = StringGenerator.getDateLocalizedUTC(mActivity,
-                DateFormat.MEDIUM, update.getTimestamp());
+                DateFormat.MEDIUM, update.getIncremental());
         String buildInfoText = mActivity.getString(R.string.list_build_version_date,
                 BuildInfoUtils.getBuildVersion(), buildDate);
         return new AlertDialog.Builder(mActivity)
@@ -518,7 +528,7 @@ public class UpdatesListAdapter extends RecyclerView.Adapter<UpdatesListAdapter.
             }
 
             @Override
-            public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+            public boolean onActionItemClicked(final ActionMode mode, MenuItem item) {
                 switch (item.getItemId()) {
                     case R.id.menu_delete_action:
                         getDeleteDialog(update.getDownloadId())

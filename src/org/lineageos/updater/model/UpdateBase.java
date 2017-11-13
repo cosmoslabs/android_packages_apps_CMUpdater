@@ -20,7 +20,7 @@ public class UpdateBase implements UpdateBaseInfo {
     private String mName;
     private String mDownloadUrl;
     private String mDownloadId;
-    private long mTimestamp;
+    private int mIncremental;
     private String mType;
     private String mVersion;
 
@@ -31,7 +31,7 @@ public class UpdateBase implements UpdateBaseInfo {
         mName = update.getName();
         mDownloadUrl = update.getDownloadUrl();
         mDownloadId = update.getDownloadId();
-        mTimestamp = update.getTimestamp();
+        mIncremental = update.getIncremental();
         mType = update.getType();
         mVersion = update.getVersion();
     }
@@ -55,12 +55,12 @@ public class UpdateBase implements UpdateBaseInfo {
     }
 
     @Override
-    public long getTimestamp() {
-        return mTimestamp;
+    public int getIncremental() {
+        return mIncremental;
     }
 
-    public void setTimestamp(long timestamp) {
-        mTimestamp = timestamp;
+    public void setIncremental(int incremental) {
+        mIncremental = incremental;
     }
 
     @Override

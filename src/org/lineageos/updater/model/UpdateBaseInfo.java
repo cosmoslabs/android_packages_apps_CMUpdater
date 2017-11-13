@@ -20,7 +20,7 @@ public interface UpdateBaseInfo {
 
     String getDownloadId();
 
-    long getTimestamp();
+    int getIncremental();
 
     String getType();
 

@@ -84,17 +84,17 @@ public class Utils {
     // used to initialize UpdateInfo objects
     private static UpdateInfo parseJsonUpdate(JSONObject object) throws JSONException {
         Update update = new Update();
-        update.setTimestamp(object.getLong("datetime"));
+        update.setIncremental(object.getInt("incremental"));
         update.setName(object.getString("filename"));
         update.setDownloadId(object.getString("id"));
-        update.setType(object.getString("romtype"));
+        update.setType(object.getString("channel"));
         update.setDownloadUrl(object.getString("url"));
-        update.setVersion(object.getString("version"));
+        update.setVersion(object.getString("versionName"));
         return update;
     }
 
     public static boolean isCompatible(UpdateBaseInfo update) {
-        if (update.getTimestamp() < SystemProperties.getLong(Constants.PROP_BUILD_DATE, 0)) {
+        if (update.getIncremental() < SystemProperties.getLong(Constants.PROP_BUILD_VERSION_INCREMENTAL, 0)) {
             Log.d(TAG, update.getName() + " is older than current build");
             return false;
         }
@@ -106,9 +106,7 @@ public class Utils {
     }
 
     public static boolean canInstall(UpdateBaseInfo update) {
-        return update.getTimestamp() >= SystemProperties.getLong(Constants.PROP_BUILD_DATE, 0) &&
-                update.getVersion().equalsIgnoreCase(
-                        SystemProperties.get(Constants.PROP_BUILD_VERSION));
+        return update.getIncremental() >= SystemProperties.getLong(Constants.PROP_BUILD_VERSION_INCREMENTAL, 0);
     }
 
     public static List<UpdateInfo> parseJson(File file, boolean compatibleOnly)
@@ -123,7 +121,7 @@ public class Utils {
         }
 
         JSONObject obj = new JSONObject(json);
-        JSONArray updatesList = obj.getJSONArray("response");
+        JSONArray updatesList = obj.getJSONArray("result");
         for (int i = 0; i < updatesList.length(); i++) {
             if (updatesList.isNull(i)) {
                 continue;
@@ -148,11 +146,11 @@ public class Utils {
         if (serverUrl.trim().isEmpty()) {
             serverUrl = context.getString(R.string.conf_update_server_url_def);
         }
-        String incrementalVersion = SystemProperties.get(Constants.PROP_BUILD_VERSION_INCREMENTAL);
-        String device = SystemProperties.get(Constants.PROP_NEXT_DEVICE,
-                SystemProperties.get(Constants.PROP_DEVICE));
+        String device = SystemProperties.get(Constants.PROP_DEVICE);
         String type = SystemProperties.get(Constants.PROP_RELEASE_TYPE).toLowerCase(Locale.ROOT);
-        return serverUrl + "/v1/" + device + "/" + type + "/" + incrementalVersion;
+        return serverUrl + String.format("/build/%s/%s",
+                type,
+                device);
     }
 
     public static void triggerUpdate(Context context, String downloadId) {

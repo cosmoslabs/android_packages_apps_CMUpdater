@@ -20,7 +20,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.AsyncTask;
-import android.support.v7.app.NotificationCompat;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.view.WindowManager;
 
@@ -105,7 +105,7 @@ public class FileUtils {
         copyFile(sourceFile, destFile, null);
     }
 
-    public static void copyFileWithDialog(Context context, File sourceFile, File destFile)
+    public static void copyFileWithDialog(final Context context, final File sourceFile, final File destFile)
             throws IOException {
 
         final int NOTIFICATION_ID = 11;
@@ -179,8 +179,8 @@ public class FileUtils {
         }.execute();
     }
 
-    public static void prepareForUncrypt(Context context, File updateFile, File uncryptFile,
-            Runnable callback) {
+    public static void prepareForUncrypt(final Context context, final File updateFile, final File uncryptFile,
+                                         final Runnable callback) {
 
         final int NOTIFICATION_ID = 12;
 

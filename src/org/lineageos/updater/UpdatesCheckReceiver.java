@@ -24,7 +24,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
-import android.support.v7.app.NotificationCompat;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import org.json.JSONException;
@@ -199,8 +199,8 @@ public class UpdatesCheckReceiver extends BroadcastReceiver {
 
         long buildTimestamp = 0;
         for (UpdateInfo update : updates) {
-            if (update.getTimestamp() > buildTimestamp) {
-                buildTimestamp = update.getTimestamp();
+            if (update.getIncremental() > buildTimestamp) {
+                buildTimestamp = update.getIncremental();
             }
         }
         buildTimestamp *= 1000;
