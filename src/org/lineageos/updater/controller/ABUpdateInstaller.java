@@ -164,6 +164,7 @@ class ABUpdateInstaller {
         UpdateEngine updateEngine = new UpdateEngine();
         updateEngine.bind(mUpdateEngineCallback);
         String zipFileUri = "file://" + file.getAbsolutePath();
+        file.setReadable(true, false);
         updateEngine.applyPayload(zipFileUri, offset, 0, headerKeyValuePairs);
 
         return true;
