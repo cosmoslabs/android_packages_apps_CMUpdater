@@ -167,7 +167,7 @@ public class UpdaterService extends Service {
             String downloadId = intent.getStringExtra(EXTRA_DOWNLOAD_ID);
             UpdateInfo update = mUpdaterController.getUpdate(downloadId);
             if (update.getPersistentStatus() != UpdateStatus.Persistent.VERIFIED) {
-                throw new IllegalArgumentException(update.getDownloadId() + " is not verified");
+                throw new IllegalArgumentException(update.getId() + " is not verified");
             }
             try {
                 if (Utils.isABUpdate(update.getFile())) {
@@ -254,7 +254,7 @@ public class UpdaterService extends Service {
                 mNotificationStyle.bigText(text);
                 mNotificationBuilder.addAction(android.R.drawable.ic_media_pause,
                         getString(R.string.pause_button),
-                        getPausePendingIntent(update.getDownloadId()));
+                        getPausePendingIntent(update.getId()));
                 mNotificationBuilder.setTicker(text);
                 mNotificationBuilder.setOngoing(true);
                 mNotificationBuilder.setAutoCancel(false);
@@ -270,7 +270,7 @@ public class UpdaterService extends Service {
                 mNotificationStyle.bigText(text);
                 mNotificationBuilder.addAction(android.R.drawable.ic_media_play,
                         getString(R.string.resume_button),
-                        getResumePendingIntent(update.getDownloadId()));
+                        getResumePendingIntent(update.getId()));
                 mNotificationBuilder.setTicker(text);
                 mNotificationBuilder.setOngoing(false);
                 mNotificationBuilder.setAutoCancel(false);
@@ -287,7 +287,7 @@ public class UpdaterService extends Service {
                 mNotificationStyle.bigText(text);
                 mNotificationBuilder.addAction(android.R.drawable.ic_media_play,
                         getString(R.string.resume_button),
-                        getResumePendingIntent(update.getDownloadId()));
+                        getResumePendingIntent(update.getId()));
                 mNotificationBuilder.setTicker(text);
                 mNotificationBuilder.setOngoing(false);
                 mNotificationBuilder.setAutoCancel(false);
@@ -407,10 +407,7 @@ public class UpdaterService extends Service {
     }
 
     private void setNotificationTitle(UpdateInfo update) {
-        String buildDate = StringGenerator.getDateLocalizedUTC(this,
-                DateFormat.MEDIUM, update.getIncremental());
-        String buildInfo = getString(R.string.list_build_version_date,
-                BuildInfoUtils.getBuildVersion(), buildDate);
+        String buildInfo = update.getDisplayVersion();
         mNotificationStyle.setBigContentTitle(buildInfo);
         mNotificationBuilder.setContentTitle(buildInfo);
     }

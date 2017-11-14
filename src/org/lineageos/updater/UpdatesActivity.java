@@ -108,12 +108,15 @@ public class UpdatesActivity extends UpdatesListActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         TextView headerTitle = (TextView) findViewById(R.id.header_title);
-        headerTitle.setText(getString(R.string.header_title_text,
-                BuildInfoUtils.getBuildVersion()));
+        headerTitle.setText(getString(R.string.display_name)/* TODO: what to display getString(R.string.header_title_text,
+                BuildInfoUtils.getBuildVersion())*/);
+
+        TextView versionText = (TextView) findViewById(R.id.header_build_version);
+        versionText.setText(BuildInfoUtils.getBuildVersion());
 
         updateLastCheckedString();
 
-        TextView headerBuildVersion = (TextView) findViewById(R.id.header_build_version);
+        TextView headerBuildVersion = (TextView) findViewById(R.id.header_build_android_version);
         headerBuildVersion.setText(
                 getString(R.string.header_android_version, Build.VERSION.RELEASE));
 
@@ -265,7 +268,7 @@ public class UpdatesActivity extends UpdatesListActivity {
         List<String> updatesOnline = new ArrayList<>();
         for (UpdateInfo update : updates) {
             newUpdates |= controller.addUpdate(update);
-            updatesOnline.add(update.getDownloadId());
+            updatesOnline.add(update.getId());
         }
 
         controller.setUpdatesAvailableOnline(updatesOnline, true);
@@ -291,7 +294,7 @@ public class UpdatesActivity extends UpdatesListActivity {
                 }
             });
             for (UpdateInfo update : sortedUpdates) {
-                updateIds.add(update.getDownloadId());
+                updateIds.add(update.getId());
             }
             mAdapter.setData(updateIds);
             mAdapter.notifyDataSetChanged();

@@ -86,7 +86,7 @@ public class Utils {
         Update update = new Update();
         update.setIncremental(object.getInt("incremental"));
         update.setName(object.getString("filename"));
-        update.setDownloadId(object.getString("id"));
+        update.setId(object.getString("id"));
         update.setType(object.getString("channel"));
         update.setDownloadUrl(object.getString("url"));
         update.setVersion(object.getString("versionName"));
@@ -190,12 +190,12 @@ public class Utils {
         List<UpdateInfo> newList = parseJson(newJson, true);
         Set<String> oldIds = new HashSet<>();
         for (UpdateInfo update : oldList) {
-            oldIds.add(update.getDownloadId());
+            oldIds.add(update.getId());
         }
         // In case of no new updates, the old list should
         // have all (if not more) the updates
         for (UpdateInfo update : newList) {
-            if (!oldIds.contains(update.getDownloadId())) {
+            if (!oldIds.contains(update.getId())) {
                 return true;
             }
         }

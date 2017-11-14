@@ -80,7 +80,7 @@ public class UpdatesDbHelper extends SQLiteOpenHelper {
         ContentValues values = new ContentValues();
         values.put(UpdateEntry.COLUMN_NAME_STATUS, update.getPersistentStatus());
         values.put(UpdateEntry.COLUMN_NAME_PATH, update.getFile().getAbsolutePath());
-        values.put(UpdateEntry.COLUMN_NAME_DOWNLOAD_ID, update.getDownloadId());
+        values.put(UpdateEntry.COLUMN_NAME_DOWNLOAD_ID, update.getId());
         values.put(UpdateEntry.COLUMN_NAME_INCREMENTAL, update.getIncremental());
         values.put(UpdateEntry.COLUMN_NAME_TYPE, update.getType());
         values.put(UpdateEntry.COLUMN_NAME_VERSION, update.getVersion());
@@ -93,7 +93,7 @@ public class UpdatesDbHelper extends SQLiteOpenHelper {
         ContentValues values = new ContentValues();
         values.put(UpdateEntry.COLUMN_NAME_STATUS, update.getPersistentStatus());
         values.put(UpdateEntry.COLUMN_NAME_PATH, update.getFile().getAbsolutePath());
-        values.put(UpdateEntry.COLUMN_NAME_DOWNLOAD_ID, update.getDownloadId());
+        values.put(UpdateEntry.COLUMN_NAME_DOWNLOAD_ID, update.getId());
         values.put(UpdateEntry.COLUMN_NAME_INCREMENTAL, update.getIncremental());
         values.put(UpdateEntry.COLUMN_NAME_TYPE, update.getType());
         values.put(UpdateEntry.COLUMN_NAME_VERSION, update.getVersion());
@@ -116,7 +116,7 @@ public class UpdatesDbHelper extends SQLiteOpenHelper {
 
     public boolean changeUpdateStatus(Update update) {
         String selection = UpdateEntry.COLUMN_NAME_DOWNLOAD_ID + " = ?";
-        String[] selectionArgs = {update.getDownloadId()};
+        String[] selectionArgs = {update.getId()};
         return changeUpdateStatus(selection, selectionArgs, update.getPersistentStatus());
     }
 
@@ -175,7 +175,7 @@ public class UpdatesDbHelper extends SQLiteOpenHelper {
                 update.setFile(new File(cursor.getString(index)));
                 update.setName(update.getFile().getName());
                 index = cursor.getColumnIndex(UpdateEntry.COLUMN_NAME_DOWNLOAD_ID);
-                update.setDownloadId(cursor.getString(index));
+                update.setId(cursor.getString(index));
                 index = cursor.getColumnIndex(UpdateEntry.COLUMN_NAME_INCREMENTAL);
                 update.setIncremental(cursor.getInt(index));
                 index = cursor.getColumnIndex(UpdateEntry.COLUMN_NAME_TYPE);

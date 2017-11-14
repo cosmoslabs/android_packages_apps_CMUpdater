@@ -129,15 +129,12 @@ public class UpdatesListAdapter extends RecyclerView.Adapter<UpdatesListAdapter.
     }
 
     private void handleActiveStatus(ViewHolder viewHolder, UpdateInfo update) {
-        String buildDate = StringGenerator.getDateLocalizedUTC(mActivity,
-                DateFormat.MEDIUM, update.getIncremental());
-        String buildInfoText = mActivity.getString(R.string.list_build_version_date,
-                BuildInfoUtils.getBuildVersion(), buildDate);
+        String buildInfoText = update.getDisplayVersion();
         viewHolder.mBuildInfo.setText(buildInfoText);
 
         boolean canDelete = false;
 
-        final String downloadId = update.getDownloadId();
+        final String downloadId = update.getId();
         if (mUpdaterController.isDownloading(downloadId)) {
             canDelete = true;
             String downloaded = StringGenerator.bytesToMegabytes(mActivity,
@@ -185,16 +182,15 @@ public class UpdatesListAdapter extends RecyclerView.Adapter<UpdatesListAdapter.
     private void handleNotActiveStatus(ViewHolder viewHolder, UpdateInfo update) {
         String buildDate = null;
         try {
-            SimpleDateFormat readSdf = new SimpleDateFormat("yyyyMMDD");
-            SimpleDateFormat writeSdf = new SimpleDateFormat("MM-DD-yyyy");
+            SimpleDateFormat readSdf = new SimpleDateFormat("yyyyMMdd");
+            DateFormat writeSdf = SimpleDateFormat.getDateInstance();
             buildDate = writeSdf.format(readSdf
                     .parse(String.valueOf(update.getIncremental()))
             );
         } catch (ParseException e) {
             e.printStackTrace();
         }
-        String buildVersion = mActivity.getString(R.string.list_build_version,
-                update.getDisplayVersion());
+        String buildVersion = update.getDisplayVersion();
         viewHolder.mBuildDate.setText(buildDate);
         viewHolder.mBuildVersion.setText(buildVersion);
 
@@ -202,13 +198,13 @@ public class UpdatesListAdapter extends RecyclerView.Adapter<UpdatesListAdapter.
             viewHolder.itemView.setOnLongClickListener(getLongClickListener(update, true));
             setButtonAction(viewHolder.mAction,
                     Utils.canInstall(update) ? Action.INSTALL : Action.DELETE,
-                    update.getDownloadId(), !isBusy());
+                    update.getId(), !isBusy());
         } else if (!Utils.canInstall(update)) {
             viewHolder.itemView.setOnLongClickListener(getLongClickListener(update, false));
-            setButtonAction(viewHolder.mAction, Action.INFO, update.getDownloadId(), !isBusy());
+            setButtonAction(viewHolder.mAction, Action.INFO, update.getId(), !isBusy());
         } else {
             viewHolder.itemView.setOnLongClickListener(getLongClickListener(update, false));
-            setButtonAction(viewHolder.mAction, Action.DOWNLOAD, update.getDownloadId(), !isBusy());
+            setButtonAction(viewHolder.mAction, Action.DOWNLOAD, update.getId(), !isBusy());
         }
     }
 
@@ -467,10 +463,7 @@ public class UpdatesListAdapter extends RecyclerView.Adapter<UpdatesListAdapter.
             return null;
         }
 
-        String buildDate = StringGenerator.getDateLocalizedUTC(mActivity,
-                DateFormat.MEDIUM, update.getIncremental());
-        String buildInfoText = mActivity.getString(R.string.list_build_version_date,
-                BuildInfoUtils.getBuildVersion(), buildDate);
+        String buildInfoText = update.getDisplayVersion();
         return new AlertDialog.Builder(mActivity)
                 .setTitle(R.string.apply_update_dialog_title)
                 .setMessage(mActivity.getString(resId, buildInfoText,
@@ -497,8 +490,8 @@ public class UpdatesListAdapter extends RecyclerView.Adapter<UpdatesListAdapter.
             return;
         }
 
-        mSelectedDownload = update.getDownloadId();
-        notifyItemChanged(update.getDownloadId());
+        mSelectedDownload = update.getId();
+        notifyItemChanged(update.getId());
 
         // Hide Action Bar not to steal the focus when using a D-pad
         final boolean showActionBar;
@@ -531,7 +524,7 @@ public class UpdatesListAdapter extends RecyclerView.Adapter<UpdatesListAdapter.
             public boolean onActionItemClicked(final ActionMode mode, MenuItem item) {
                 switch (item.getItemId()) {
                     case R.id.menu_delete_action:
-                        getDeleteDialog(update.getDownloadId())
+                        getDeleteDialog(update.getId())
                                 .setOnDismissListener(new DialogInterface.OnDismissListener() {
                                     @Override
                                     public void onDismiss(DialogInterface dialog) {
@@ -563,7 +556,7 @@ public class UpdatesListAdapter extends RecyclerView.Adapter<UpdatesListAdapter.
             public void onDestroyActionMode(ActionMode mode) {
                 mSelectedDownload = null;
                 mActionMode = null;
-                notifyItemChanged(update.getDownloadId());
+                notifyItemChanged(update.getId());
 
                 if (showActionBar) {
                     mActivity.getSupportActionBar().show();

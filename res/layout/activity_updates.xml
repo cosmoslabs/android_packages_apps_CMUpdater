@@ -40,15 +40,7 @@
                     android:fontFamily="sans-serif-light"
                     android:paddingBottom="16dp"
                     android:textColor="@color/white"
-                    android:textSize="56sp" />
-
-                <TextView
-                    android:id="@+id/header_build_date"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@id/header_title"
-                    android:textColor="@color/white"
-                    android:textSize="12sp" />
+                    android:textSize="32sp" />
 
                 <TextView
                     android:id="@+id/header_build_version"
@@ -56,15 +48,31 @@
                     android:layout_height="wrap_content"
                     android:layout_below="@id/header_build_date"
                     android:textColor="@color/white"
-                    android:textSize="12sp" />
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/header_build_date"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/header_title"
+                    android:textColor="@color/white"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/header_build_android_version"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/header_build_version"
+                    android:textColor="@color/white"
+                    android:textSize="16sp" />
 
                 <TextView
                     android:id="@+id/header_last_check"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_below="@id/header_build_version"
+                    android:layout_below="@id/header_build_android_version"
                     android:textColor="@color/white"
-                    android:textSize="12sp" />
+                    android:textSize="16sp" />
             </RelativeLayout>
 
             <android.support.v7.widget.Toolbar

@@ -29,7 +29,7 @@ public class UpdateEngine {
         public static final int DISABLED = 9;
     }
 
-    public void bind(UpdateEngineCallback mUpdateEngineCallback) {}
-
-    public void applyPayload(String zipFileUri, long offset, int i, String[] headerKeyValuePairs) {}
+    public boolean bind(final UpdateEngineCallback callback) { return false; }
+    public boolean bind(final UpdateEngineCallback callback, final Handler handler) { return false; }
+    public void applyPayload(String url, long offset, long size, String[] headerKeyValuePairs) {}
 }

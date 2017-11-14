@@ -19,7 +19,7 @@ public class UpdateBase implements UpdateBaseInfo {
 
     private String mName;
     private String mDownloadUrl;
-    private String mDownloadId;
+    private String mId;
     private int mIncremental;
     private String mType;
     private String mVersion;
@@ -30,7 +30,7 @@ public class UpdateBase implements UpdateBaseInfo {
     public UpdateBase(UpdateBaseInfo update) {
         mName = update.getName();
         mDownloadUrl = update.getDownloadUrl();
-        mDownloadId = update.getDownloadId();
+        mId = update.getId();
         mIncremental = update.getIncremental();
         mType = update.getType();
         mVersion = update.getVersion();
@@ -46,12 +46,12 @@ public class UpdateBase implements UpdateBaseInfo {
     }
 
     @Override
-    public String getDownloadId() {
-        return mDownloadId;
+    public String getId() {
+        return mId;
     }
 
-    public void setDownloadId(String downloadId) {
-        mDownloadId = downloadId;
+    public void setId(String downloadId) {
+        mId = downloadId;
     }
 
     @Override

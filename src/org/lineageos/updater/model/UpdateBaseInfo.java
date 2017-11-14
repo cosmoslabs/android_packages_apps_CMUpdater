@@ -18,7 +18,7 @@ package org.lineageos.updater.model;
 public interface UpdateBaseInfo {
     String getName();
 
-    String getDownloadId();
+    String getId();
 
     int getIncremental();
 

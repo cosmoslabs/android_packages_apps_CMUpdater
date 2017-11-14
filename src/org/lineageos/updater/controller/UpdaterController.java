@@ -313,11 +313,11 @@ public class UpdaterController implements Controller {
     public void setUpdatesAvailableOnline(List<String> downloadIds, boolean purgeList) {
         List<String> toRemove = new ArrayList<>();
         for (DownloadEntry entry : mDownloads.values()) {
-            boolean online = downloadIds.contains(entry.mUpdate.getDownloadId());
+            boolean online = downloadIds.contains(entry.mUpdate.getId());
             entry.mUpdate.setAvailableOnline(online);
             if (!online && purgeList &&
                     entry.mUpdate.getPersistentStatus() == UpdateStatus.Persistent.UNKNOWN) {
-                toRemove.add(entry.mUpdate.getDownloadId());
+                toRemove.add(entry.mUpdate.getId());
             }
         }
         for (String downloadId : toRemove) {
@@ -333,10 +333,10 @@ public class UpdaterController implements Controller {
     }
 
     private boolean addUpdate(final UpdateInfo updateInfo, boolean availableOnline) {
-        Log.d(TAG, "Adding download: " + updateInfo.getDownloadId());
-        if (mDownloads.containsKey(updateInfo.getDownloadId())) {
-            Log.d(TAG, "Download (" + updateInfo.getDownloadId() + ") already added");
-            Update updateAdded = mDownloads.get(updateInfo.getDownloadId()).mUpdate;
+        Log.d(TAG, "Adding download: " + updateInfo.getId());
+        if (mDownloads.containsKey(updateInfo.getId())) {
+            Log.d(TAG, "Download (" + updateInfo.getId() + ") already added");
+            Update updateAdded = mDownloads.get(updateInfo.getId()).mUpdate;
             updateAdded.setAvailableOnline(availableOnline && updateAdded.getAvailableOnline());
             updateAdded.setDownloadUrl(updateInfo.getDownloadUrl());
             return false;
@@ -345,11 +345,11 @@ public class UpdaterController implements Controller {
         if (!fixUpdateStatus(update) && !availableOnline) {
             update.setPersistentStatus(UpdateStatus.Persistent.UNKNOWN);
             deleteUpdateAsync(update);
-            Log.d(TAG, update.getDownloadId() + " had an invalid status and is not online");
+            Log.d(TAG, update.getId() + " had an invalid status and is not online");
             return false;
         }
         update.setAvailableOnline(availableOnline);
-        mDownloads.put(update.getDownloadId(), new DownloadEntry(update));
+        mDownloads.put(update.getId(), new DownloadEntry(update));
         return true;
     }
 
@@ -456,7 +456,7 @@ public class UpdaterController implements Controller {
                 if (file.exists() && !file.delete()) {
                     Log.e(TAG, "Could not delete " + file.getAbsolutePath());
                 }
-                mUpdatesDbHelper.removeUpdate(update.getDownloadId());
+                mUpdatesDbHelper.removeUpdate(update.getId());
             }
         }).start();
     }

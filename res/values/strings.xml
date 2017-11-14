@@ -20,7 +20,7 @@
 
     <!-- Directory where the update files will be downloaded and stored.
          WARNING: The application can and will delete any unknown file. -->
-    <string name="download_path" translatable="false">/data/lunar_updates/</string>
+    <string name="download_path" translatable="false">/data/ota_package/</string>
 
     <!-- Directory where the downloads will be exported to.
          The path is relative to the root of the external storage.-->
@@ -75,8 +75,6 @@
     <string name="header_android_version">Android <xliff:g id="version" example="7.1.2">%1$s</xliff:g></string>
     <string name="header_last_updates_check">Last checked: <xliff:g id="date" example="1 January 1970">%1$s</xliff:g> (<xliff:g id="time" example="01:23">%2$s</xliff:g>)</string>
 
-    <string name="list_build_version">Lunar <xliff:g id="version" example="14.1">%1$s</xliff:g></string>
-    <string name="list_build_version_date">Lunar <xliff:g id="version" example="14.1">%1$s</xliff:g> - <xliff:g id="date" example="July 11, 2017">%2$s</xliff:g></string>
     <string name="list_download_progress"><xliff:g id="filesize_without_unit" example="12.2">%1$s</xliff:g> of <xliff:g id="filesize_without_unit" example="310 MB">%2$s</xliff:g></string>
     <string name="list_download_progress_eta"><xliff:g id="filesize_without_unit" example="12.2">%1$s</xliff:g> of <xliff:g id="filesize_without_unit" example="310 MB">%2$s</xliff:g> - <xliff:g id="duration" example="3 minutes">%3$s</xliff:g> left</string>
     <string name="list_installing_update">Installing update</string>

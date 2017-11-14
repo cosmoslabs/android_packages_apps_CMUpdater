@@ -16,6 +16,7 @@
 package org.lineageos.updater.model;
 
 import java.io.File;
+import java.util.Locale;
 
 public class Update extends UpdateBase implements UpdateInfo {
 
@@ -124,6 +125,11 @@ public class Update extends UpdateBase implements UpdateInfo {
     @Override
     public boolean getAvailableOnline() {
         return mAvailableOnline;
+    }
+
+    @Override
+    public String getDisplayVersion() {
+        return String.format(Locale.ROOT, "%s %s.%d", getVersion(), getId(), getIncremental());
     }
 
     public void setAvailableOnline(boolean availableOnline) {
