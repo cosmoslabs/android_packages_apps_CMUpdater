@@ -100,4 +100,6 @@
     <string name="rebooting">Rebooting...</string>
     <string name="installation_failed">Update Failed to Install</string>
     <string name="failed_to_install_update">Unforunately, we were unable to update your device</string>
+    <string name="reboot_now">Reboot Now</string>
+    <string name="installing_update_finished">Update installed</string>
 </resources>

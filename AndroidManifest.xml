@@ -38,6 +38,7 @@
         <service android:name="com.cyanogenmod.updater.service.UpdateCheckService" />
         <service android:name="com.cyanogenmod.updater.service.DownloadService" />
         <service android:name="com.cyanogenmod.updater.service.DownloadCompleteIntentService" />
+        <service android:name="com.cyanogenmod.updater.service.ABUpdaterService" />
 
         <receiver android:name="com.cyanogenmod.updater.receiver.UpdateCheckReceiver">
             <intent-filter>

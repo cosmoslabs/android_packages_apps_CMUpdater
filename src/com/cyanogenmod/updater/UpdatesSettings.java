@@ -863,7 +863,7 @@ public class UpdatesSettings extends PreferenceActivity implements
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         try {
-                            Utils.triggerUpdate(UpdatesSettings.this, updateInfo.getFileName());
+                            Utils.triggerUpdate(UpdatesSettings.this, updateInfo);
                         } catch (IOException e) {
                             Log.e(TAG, "Unable to reboot into recovery mode", e);
                             Toast.makeText(UpdatesSettings.this, R.string.apply_unable_to_reboot_toast,
