@@ -632,7 +632,7 @@ public class UpdatesSettings extends PreferenceActivity implements
 
         // Determine installed incremental
         int installedIncremental = Utils.getIncremental(getBaseContext());
-
+        String installedId = Utils.getId(getBaseContext());
         // Convert LinkedList to HashMap, keyed on filename.
         HashMap<String, UpdateInfo> updatesMap = new HashMap<String, UpdateInfo>();
         for (UpdateInfo ui : updates) {
@@ -658,7 +658,7 @@ public class UpdatesSettings extends PreferenceActivity implements
             if (isDownloading) {
                 // In progress download
                 style = UpdatePreference.STYLE_DOWNLOADING;
-            } else if (ui.getIncremental() == installedIncremental) {
+            } else if (ui.getIncremental() == installedIncremental && ui.getId().equals(installedId)) {
                 // This is the currently installed version
                 style = UpdatePreference.STYLE_INSTALLED;
             } else if (isDownloaded) {
@@ -863,7 +863,7 @@ public class UpdatesSettings extends PreferenceActivity implements
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         try {
-                            Utils.triggerUpdate(getApplicationContext(), updateInfo.getFileName());
+                            Utils.triggerUpdate(UpdatesSettings.this, updateInfo.getFileName());
                         } catch (IOException e) {
                             Log.e(TAG, "Unable to reboot into recovery mode", e);
                             Toast.makeText(UpdatesSettings.this, R.string.apply_unable_to_reboot_toast,

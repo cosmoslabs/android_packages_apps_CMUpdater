@@ -247,6 +247,7 @@ public class UpdateCheckService extends IntentService
                 .setMD5Sum(obj.getString("md5sum"))
                 .setType(obj.getString("channel"))
                 .setId(obj.getString("id"))
+                .setIncremental(obj.getInt("incremental"))
                 .build();
 
         if (!ui.isNewerThanInstalled(getBaseContext())) {

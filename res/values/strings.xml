@@ -95,4 +95,9 @@
     <string name="no_changelog_alert">No changelog available</string>
     <string name="changelog_dialog_title">Changelog</string>
     <string name="loading_changelog">Loading\u2026</string>
+
+    <string name="installing_update">Installing Update\u2026</string>
+    <string name="rebooting">Rebooting...</string>
+    <string name="installation_failed">Update Failed to Install</string>
+    <string name="failed_to_install_update">Unforunately, we were unable to update your device</string>
 </resources>

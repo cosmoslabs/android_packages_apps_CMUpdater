@@ -13,8 +13,9 @@
     <string name="conf_product_name_property" translatable="false">ro.product.name</string>
     <string name="conf_version_property" translatable="false">ro.modversion</string>
     <string name="conf_version_incremental_property" translatable="false">ro.build.version.incremental</string>
+    <string name="conf_build_id_property" translatable="false">ro.build.id</string>
 
-    <string name="conf_updates_folder" translatable="false">Updates</string>
+    <string name="conf_updates_folder" translatable="false">/data/ota_package/</string>
     <string name="conf_update_server_url_property" translatable="false">ro.build.updater.url</string>
     <string name="conf_update_server_default_url" translatable="false">https://staging.lunarwireless.com/updates/</string>
 </resources>

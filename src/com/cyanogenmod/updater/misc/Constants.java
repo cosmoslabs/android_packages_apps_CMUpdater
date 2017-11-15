@@ -10,6 +10,9 @@
 package com.cyanogenmod.updater.misc;
 
 public class Constants {
+    public static final String AB_PAYLOAD_BIN_PATH = "payload.bin";
+    public static final String AB_PAYLOAD_PROPERTIES_PATH = "payload_properties.txt";
+
     // Download related
     public static final String DOWNLOAD_ID = "download_id";
     public static final String DOWNLOAD_NAME = "download_name";

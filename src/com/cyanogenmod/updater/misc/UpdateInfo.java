@@ -139,7 +139,7 @@ public class UpdateInfo implements Parcelable, Serializable {
         }
         mIsNewerThanInstalled = false;
         try {
-            mIsNewerThanInstalled = getIncremental() > Utils.getIncremental(ctx);
+            mIsNewerThanInstalled = getIncremental() >= Utils.getIncremental(ctx);
         }
         catch(Exception ex) {}
 
@@ -291,8 +291,8 @@ public class UpdateInfo implements Parcelable, Serializable {
             return this;
         }
 
-        public Builder setIncremental(String incremental) {
-            mIncremental = Integer.parseInt(incremental);
+        public Builder setIncremental(int incremental) {
+            mIncremental = incremental;
             return this;
         }
 
@@ -301,8 +301,8 @@ public class UpdateInfo implements Parcelable, Serializable {
             return this;
         }
 
-        public Builder setFromIncremental(String fromIncremental) {
-            this.mFromIncremental = Integer.parseInt(fromIncremental);
+        public Builder setFromIncremental(int fromIncremental) {
+            this.mFromIncremental = fromIncremental;
             return this;
         }
 
