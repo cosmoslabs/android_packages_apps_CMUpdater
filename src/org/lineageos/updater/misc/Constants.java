@@ -32,6 +32,7 @@ public final class Constants {
 
     public static final String PROP_BUILD_DATE = "ro.build.date.utc";
     public static final String PROP_BUILD_VERSION = "ro.lunar.version";
+    public static final String PROP_BUILD_ID = "ro.build.id";
     public static final String PROP_BUILD_VERSION_INCREMENTAL = "ro.build.version.incremental";
     public static final String PROP_DEVICE = "ro.product.device";
     public static final String PROP_RELEASE_TYPE = "ro.build.version.type";

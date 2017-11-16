@@ -148,9 +148,13 @@ public class Utils {
         }
         String device = SystemProperties.get(Constants.PROP_DEVICE);
         String type = SystemProperties.get(Constants.PROP_RELEASE_TYPE).toLowerCase(Locale.ROOT);
-        return serverUrl + String.format("/build/%s/%s",
+        String id = SystemProperties.get(Constants.PROP_BUILD_ID);
+        String incremental = SystemProperties.get(Constants.PROP_BUILD_VERSION_INCREMENTAL);
+        return serverUrl + String.format("/build/%s/%s/%s.%s",
                 type,
-                device);
+                device,
+                id,
+                incremental);
     }
 
     public static void triggerUpdate(Context context, String downloadId) {
